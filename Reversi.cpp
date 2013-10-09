@@ -1,5 +1,6 @@
 #include "Reversi.h"
 #include <iostream>
+#include <stdiolib.h>
 
 void Reversi::display_board(){
 	cout<<"_ _ _ _ _ _ _ _"<<endl;							//displays board and current score
@@ -41,6 +42,66 @@ void Reversi::update_score(){
 		}			
 	white_score = white_count;
 	black_score = black_count;
+}
+
+void make_move(string move){
+	//check size of move
+	if(sizeof(move) != 2)
+		throw runtime_error("Make Move: invalid size of move");
+	//split move into correct data types
+	stringstream s;
+	s.str(move);
+	int x = -1;
+	x<<s;
+	char c = 'x';
+	c<<s;
+	// check if valid move
+	int possible_move_check = false;
+	for(unsigned int i=0; i< avalible_moves.szie(); i++)
+		if(avalible_moves[i] == (x,s))
+			possible_move_check = true;
+	if(!possible_move_check)
+		throw runtime_error("Make move: invalid move");
+	int temp_x = x;
+	int temp_y = get_number_of_letter(c);
+	//check all directions
+	//if valid in a direction flip all appropriate tiles
+	/*
+		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent))		//check above
+			temp_vec.push_back(open_spaces[i]);
+		y_step = 1;
+		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent))		//check below
+			temp_vec.push_back(open_spaces[i]);
+		y_step = 0;
+		x_step = 1;
+		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent))		//check right
+			temp_vec.push_back(open_spaces[i]);
+		x_step = -1;
+		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent))		//check left
+			temp_vec.push_back(open_spaces[i]);
+		y_step = -1;
+		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent))		//check top left
+			temp_vec.push_back(open_spaces[i]);
+		x_step = 1;
+		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent))		//check top right
+			temp_vec.push_back(open_spaces[i]);
+		y_step = 1;
+		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent))		//check bottom right
+			temp_vec.push_back(open_spaces[i]);
+		x_step = -1;
+		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent))		//check bottom left
+			temp_vec.push_back(open_spaces[i]);
+			*/
+		update_score();
+		display_board();
+	
+}
+
+void Reversi::make_random_move(char side){
+	vector<int, char> moves = get_avalible_moves(side);
+	int random_index = rand(get_avalible_moves.size());
+	//turn moves[random_index] into a string
+	//make_move(string moves[random_index])
 }
 
 vector<int, char> Reversi::get_avalible_moves(char side){

@@ -26,7 +26,7 @@ class Reversi{
 		*/
 		void play_game(int file_descriptor);
 		
-		void make_random_move();
+		void make_random_move(char side);
 		void make_move(string move);
 		
 		bool is_valid_move(string move);
@@ -41,6 +41,7 @@ class Reversi{
 		void display_state();
 		int white_score;
 		int black_score;
+		char current_player;				//holds the players color whose turn it is
 		
 		// PRIVATE UTILITY FUNCTIONS
 		char get_number_of_letter(int number);
