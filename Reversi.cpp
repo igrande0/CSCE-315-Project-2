@@ -21,6 +21,8 @@ string Reversi::get_state_string(){
 	}
 	STRING += "a b c d e f g h\n";
 	STRING += "White Score: " + white_score + "\t" + "Black Score: " + black_score + "\n";
+
+	return STRING;
 }
 
 void Reversi::clear_board(){							//sets board to starting state of game
@@ -33,7 +35,6 @@ void Reversi::clear_board(){							//sets board to starting state of game
 	board[4][4] = 'w';
 	update_score();									//updates score
 }
-
 
 
 void Reversi::update_score(){
