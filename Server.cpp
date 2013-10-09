@@ -13,8 +13,11 @@ using namespace std;
 void play_game(int*);
 
 //Constructors
-Server::Server(){}
+Server::Server(){};
 Server::Server(int i): port(i) {};
+Server::~Server(){
+	close(master_sock);
+}
 	
 //Getters
 int Server::get_port(){ return port;}
@@ -44,7 +47,6 @@ void Server::acquire_master_sock(int port, int backlog) {
 
 
 void Server::start(){
-	int port=50000;
 	int s_sock;
 	struct sockaddr_un fsin;
 	acquire_master_sock(port, 10);
@@ -52,10 +54,12 @@ void Server::start(){
 	
 	for(;;){
 		s_sock=accept(master_sock,(struct sockaddr*)&fsin,&addr_len);
+		cout << "Accepting Connection: " << s_sock << " On port: " << port << '\n';
 		if (s_sock < 0){
 			exit(2);
 		}
 		if(fork()==0){ //child
+			close(master_sock);
 			play_game(&s_sock);
 			close(s_sock);
 			exit(0);
@@ -65,7 +69,11 @@ void Server::start(){
 }
 
 void play_game(int* sock){
-	char buf[4];
-	write(*sock, "Success!", 9);
-	read(*sock,buf,4);
+	char buff[512];
+	write(*sock, "Success!\r\n>", 12);
+	int size=read(*sock,buff,512);
+	//cout << "Received: " << buff;
+	write(*sock, "Received: ",10);
+	write(*sock,buff,size);
+	write(*sock,"Game Play Functionality Verified, Bye!\r\n",42);
 }

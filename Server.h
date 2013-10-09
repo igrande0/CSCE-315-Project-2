@@ -10,6 +10,7 @@ class Server{
 	//Constructors
 	Server();
 	Server(int);
+	~Server();
 	
 	//Getters
 	int get_port();
