@@ -46,4 +46,5 @@ class Reversi{
 		char get_number_of_letter(int number);
 		int get_letter_of_number(char c);
 		vector<int, char> get_available_moves();
+		bool stepping_loop(int x_step, int y_step, int x, int y, char self, char opp);
 }

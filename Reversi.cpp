@@ -2,7 +2,7 @@
 #include <iostream>
 
 void Reversi::display_board(){
-	cout<<"_ _ _ _ _ _ _ _"<<endl;
+	cout<<"_ _ _ _ _ _ _ _"<<endl;							//displays board and current score
 	for(unsigned int i=0; i<8; i++){
 		cout<<(i+1)<<"|";
 		for(unsigned int j=0; j<8; j++){
@@ -13,13 +13,13 @@ void Reversi::display_board(){
 			else
 				cout<<"_|";
 		}
-		cout<<"a b c d e f g h"<<endl;
 		cout<<endl;
 	}
-			
+	cout<<"a b c d e f g h"<<endl;
+	cout<<"White Score: "<<white_score<<"\t"<<"Black Score: "<<black_score<<endl;
 }
 
-void Reversi::clear_board(){
+void Reversi::clear_board(){							//sets board to starting state of game
 	for(unsigned int i=0; i<8; ++)
 		for(unsigned int j=0; j<8 j++)
 			board[i][j] = 'o';
@@ -27,6 +27,7 @@ void Reversi::clear_board(){
 	board[3][4] = 'b';
 	board[4][3] = 'b';
 	board[4][4] = 'w';
+	update_score();									//updates score
 }
 
 void Reversi::update_score(){
@@ -37,7 +38,7 @@ void Reversi::update_score(){
 				white_count++;
 			else if(board[i][j] == 'b')
 				black_count++;
-		}
+		}			
 	white_score = white_count;
 	black_score = black_count;
 }
@@ -51,17 +52,70 @@ vector<int, char> Reversi::get_avalible_moves(char side){
 	vector<int, char> temp_vec;
 	//needs to be finished
 	vector<int, char> open_spaces = get_open_spaces();				//need to check every direction for every space
-	/*for(unsigned int i=0; i<open_spaces.size(); i++){
+	for(unsigned int i=0; i<open_spaces.size(); i++){
 		//check if board[i][j] is a possible move
-		int temp_x = i;
-		int temp_y = j;
+		int temp_x = i;		//set to x coord
+		int temp_y = j;		//set to y coord
 		int x_step = 0;
-		int y_step = 0;
-		while(temp_x < 8 && temp_y < 8 && board[temp_x][temp_y] != 'o'){ //check above
-
+		int y_step = -1;
+		bool check_push_back = false;
+		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent)){		//check above
+			temp_vec.push_back(open_spaces[i]);
+			check_push_back = true;
 		}
-	}*/
+		y_step = 1;
+		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent) && !check_push_back){		//check below
+			temp_vec.push_back(open_spaces[i]);
+			check_push_back = true;
+		}
+		y_step = 0;
+		x_step = 1;
+		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent) && !check_push_back){		//check right
+			temp_vec.push_back(open_spaces[i]);
+			check_push_back = true;
+		}
+		x_step = -1;
+		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent) && !check_push_back){		//check left
+			temp_vec.push_back(open_spaces[i]);
+			check_push_back = true;
+		}
+		y_step = -1;
+		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent) && !check_push_back){		//check top left
+			temp_vec.push_back(open_spaces[i]);
+			check_push_back = true;
+		}
+		x_step = 1;
+		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent) && !check_push_back){		//check top right
+			temp_vec.push_back(open_spaces[i]);
+			check_push_back = true;
+		}
+		y_step = 1;
+		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent) && !check_push_back){		//check bottom right
+			temp_vec.push_back(open_spaces[i]);
+			check_push_back = true;
+		}
+		x_step = -1;
+		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent) && !check_push_back){		//check bottom left
+			temp_vec.push_back(open_spaces[i]);
+			check_push_back = true;
+		}
+	}
 	return temp_vec;
+}
+
+bool  Reversi::stepping_loop(int x_step, int y_step, int x, int y, char self, char opp){
+	x+=x_step;
+	y+=y_step;
+	bool mid_check=false;
+	while(x < 8 && y < 8 && board[x][y] != 'o' x >= 0 && y >= 0){
+		if(board[x][y] == opp)
+			mid_check=true;
+		else if(board[x][y] == self && mid_check == true)
+			return true;
+		x+=x_step;
+		y+=y_step;
+	}
+	return false;
 }
 
 vector<int, char> Reversi::get_open_spaces(){
