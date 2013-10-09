@@ -4,22 +4,23 @@
 #include <stdexcept>
 //#include <stdiolib.h>
 
-void Reversi::display_state(){
-	cout<<"_ _ _ _ _ _ _ _"<<endl;							//displays board and current score
+string Reversi::get_state_string(){
+	string STRING;
+	STRING +="_ _ _ _ _ _ _ _\n";							//displays board and current score
 	for(unsigned int i=0; i<8; i++){
-		cout<<(i+1)<<"|";
+		STRING += i + "|";
 		for(unsigned int j=0; j<8; j++){
 			if(board[i][j] == 'w')
-				cout<<"O|";
+				STRING += "O|";
 			else if(board[i][j] == 'b')
-				cout<<"@|";
+				STRING += "@|";
 			else
-				cout<<"_|";
+				STRING += "_|";
 		}
-		cout<<endl;
+		STRING += "\n";
 	}
-	cout<<"a b c d e f g h"<<endl;
-	cout<<"White Score: "<<white_score<<"\t"<<"Black Score: "<<black_score<<endl;
+	STRING += "a b c d e f g h\n";
+	STRING += "White Score: " + white_score + "\t" + "Black Score: " + black_score + "\n";
 }
 
 void Reversi::clear_board(){							//sets board to starting state of game
@@ -32,6 +33,8 @@ void Reversi::clear_board(){							//sets board to starting state of game
 	board[4][4] = 'w';
 	update_score();									//updates score
 }
+
+
 
 void Reversi::update_score(){
 	int white_count, black_count = 0;
@@ -46,10 +49,10 @@ void Reversi::update_score(){
 	black_score = black_count;
 }
 
-void Reversi::make_move(string move){
+bool Reversi::make_move(string move){
 	//check size of move
 	if(sizeof(move) != 2)
-		throw runtime_error("Make Move: invalid size of move");
+		return false;
 	//split move into correct data types
 	stringstream s;
 	s.str(move);
@@ -63,7 +66,7 @@ void Reversi::make_move(string move){
 		//if(available_moves[i] == (x,s))
 			//possible_move_check = true;
 	if(!possible_move_check)
-		throw runtime_error("Make move: invalid move");
+		return false;
 	int temp_x = x;
 	int temp_y = get_number_of_letter(c);
 	//check all directions
@@ -95,12 +98,17 @@ void Reversi::make_move(string move){
 			temp_vec.push_back(open_spaces[i]);
 			*/
 		update_score();
-		display_state();
-	
+		if(current_player == 'w')
+			current_player = 'b';
+		else
+			current_player = 'w';
+		available_moves = get_available_moves();
 }
 
-void Reversi::make_random_move(char side){
-	int random_index = rand() % available_moves.size();
+bool Reversi::make_random_move(){
+	int random_index = rand() % (available_moves.size()-1);
+	string s = get_letter_of_number(available_moves[random_index].column) + to_string(available_moves[random_index].row);
+	make_move(s);
 	//turn moves[random_index] into a string
 	//make_move(string moves[random_index])
 }
@@ -194,6 +202,21 @@ bool Reversi::stepping_loop(int x_step, int y_step, int x, int y, char self, cha
 		y+=y_step;
 	}
 	return false;
+}
+
+bool Reversi::is_move_valid(Position move){
+	for(unsigned int i=0; i<available_moves.size(); i++)
+		if(move == available_moves[i])
+			return true;
+	return false;
+}
+
+bool Reversi::is_game_over(){
+	vector<Position> open_spaces = get_open_spaces();
+	if(open_spaces.size() == 0)
+		return true;
+	else
+		return false;
 }
 
 vector<Position> Reversi::get_open_spaces(){
