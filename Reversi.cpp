@@ -105,6 +105,24 @@ void Reversi::make_random_move(char side){
 	//make_move(string moves[random_index])
 }
 
+bool Reversi::undo(){
+	State last_state;
+
+	if(previous_states.size() < 2)
+		return false;
+
+	// remove other player's move
+	previous_states.pop();
+
+	// revert to state before last move
+	last_state = previous_states.top();
+	board = last_state.board;
+	available_moves = last_state.available_moves;
+	white_score = last_state.white_score;
+	black_score = last_state.black_score;
+	current_player = last_state.current_player;
+}
+
 vector<Position> Reversi::get_available_moves(char side){
 	char opponent;
 	if(side == 'w')				//determines oppenents color by given argument

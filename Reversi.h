@@ -51,6 +51,8 @@ class Reversi{
 		
 		bool is_valid_move(string move);
 		bool is_game_over();
+
+		bool undo();
 		
 		string get_state();
 	private:
