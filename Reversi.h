@@ -1,8 +1,28 @@
+#include <string>
+#include <vector>
+#include <stack>
+
+using namespace std;
+
+struct State {
+	vector<vector<char> > board;
+	vector<string> available_moves;
+	stack<string> previous_moves;
+	void display_state();
+	int white_score;
+	int black_score;
+	char current_player;
+};
+
+struct Position {
+	unsigned int row;
+	unsigned int column;
+};
+
 class Reversi{
 	public:
 		void clear_board();
 		void update_score();
-		vector<int, char> get_open_spaces();
 		
 		/* POSSIBLE FUNCTIONS */
 		
@@ -35,17 +55,18 @@ class Reversi{
 		string get_state();
 	private:
 		// STATE VARIABLES
-		vector<vector<char>> board;
-		vector<int, char> available_moves;
-		stack<int, char> previous_moves;
+		vector<vector<char> > board;
+		vector<Position> available_moves;
+		stack<Position> previous_moves;
 		void display_state();
 		int white_score;
 		int black_score;
 		char current_player;				//holds the players color whose turn it is
 		
 		// PRIVATE UTILITY FUNCTIONS
-		char get_number_of_letter(int number);
-		int get_letter_of_number(char c);
-		vector<int, char> get_available_moves();
+		int get_number_of_letter(char c);
+		char get_letter_of_number(int number);
+		vector<Position> get_available_moves(char side);
+		vector<Position> get_open_spaces();
 		bool stepping_loop(int x_step, int y_step, int x, int y, char self, char opp);
-}
+};
