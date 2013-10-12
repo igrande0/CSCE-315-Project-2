@@ -73,8 +73,9 @@ class Reversi{
 		// PRIVATE UTILITY FUNCTIONS
 		int get_number_of_letter(char c);			//done
 		char get_letter_of_number(int number);		//done
-		vector<Position> get_available_moves(char side);		//done
+		vector<Position> get_available_moves();		//done
 		vector<Position> get_open_spaces();			//done
 		bool stepping_loop(int x_step, int y_step, int x, int y, char self, char opp);		//done
 		void update_score();															//done
+		vector<Position> get_tiles(Position start_position, int x_step, int y_step)
 };

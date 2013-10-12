@@ -61,48 +61,93 @@ bool Reversi::make_move(string move){
 	char c = 'x';
 	x << c;
 	// check if valid move
+	Position current_move;
+	current_move.row = x;
+	current_move.column = get_number_of_letter(c);
+
 	bool possible_move_check = false;
 	for(unsigned int i=0; i< available_moves.size(); i++)
-		//if(available_moves[i] == (x,s))
-			//possible_move_check = true;
+		if(available_moves[i] == current_move)
+			possible_move_check = true;
+
 	if(!possible_move_check)
 		return false;
-	int temp_x = x;
-	int temp_y = get_number_of_letter(c);
+
 	//check all directions
 	//if valid in a direction flip all appropriate tiles
-	/*
-		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent))		//check above
-			temp_vec.push_back(open_spaces[i]);
-		y_step = 1;
-		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent))		//check below
-			temp_vec.push_back(open_spaces[i]);
-		y_step = 0;
-		x_step = 1;
-		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent))		//check right
-			temp_vec.push_back(open_spaces[i]);
-		x_step = -1;
-		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent))		//check left
-			temp_vec.push_back(open_spaces[i]);
-		y_step = -1;
-		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent))		//check top left
-			temp_vec.push_back(open_spaces[i]);
-		x_step = 1;
-		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent))		//check top right
-			temp_vec.push_back(open_spaces[i]);
-		y_step = 1;
-		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent))		//check bottom right
-			temp_vec.push_back(open_spaces[i]);
-		x_step = -1;
-		if(stepping_loop(x_step, y_step, temp_x, temp_y, side, opponent))		//check bottom left
-			temp_vec.push_back(open_spaces[i]);
-			*/
-		update_score();
-		if(current_player == 'w')
-			current_player = 'b';
-		else
-			current_player = 'w';
-		available_moves = get_available_moves();
+	vector<Position> all_positions;
+	vector<Position> temp_positions;
+	int x_step = 0;
+	int y_step = -1;
+	temp_positions = get_tiles(current_position, x_step, y_step);		//check above
+	for(unsigned int i=0; i<temp_positions.size(); i++)
+		all_positions.push_back(temp_positions[i]);
+	y_step = 1;
+	temp_positions = get_tiles(current_position, x_step, y_step);		//check below
+	for(unsigned int i=0; i<temp_positions.size(); i++)
+		all_positions.push_back(temp_positions[i]);
+	y_step = 0;
+	x_step = 1;
+	temp_positions = get_tiles(current_position, x_step, y_step);		//check right
+	for(unsigned int i=0; i<temp_positions.size(); i++)
+		all_positions.push_back(temp_positions[i]);
+	x_step = -1;
+	temp_positions = get_tiles(current_position, x_step, y_step);		//check left
+	for(unsigned int i=0; i<temp_positions.size(); i++)
+		all_positions.push_back(temp_positions[i]);
+	y_step = -1;
+	temp_positions = get_tiles(current_position, x_step, y_step);		//check top left
+	for(unsigned int i=0; i<temp_positions.size(); i++)
+		all_positions.push_back(temp_positions[i]);
+	x_step = 1;
+	temp_positions = get_tiles(current_position, x_step, y_step);		//check top right
+	for(unsigned int i=0; i<temp_positions.size(); i++)
+		all_positions.push_back(temp_positions[i]);
+	y_step = 1;
+	temp_positions = get_tiles(current_position, x_step, y_step);		//check bottom right
+	for(unsigned int i=0; i<temp_positions.size(); i++)
+		all_positions.push_back(temp_positions[i]);
+	x_step = -1;
+	temp_positions = get_tiles(current_position, x_step, y_step);		//check bottom left
+	for(unsigned int i=0; i<temp_positions.size(); i++)
+		all_positions.push_back(temp_positions[i]);
+	for(unsigned int i=0; i<all_postions.size(); i++)
+		board[all_positions[i].row][all_positions[i].column] = current_player;
+	update_score();
+	if(current_player == 'w')
+		current_player = 'b';
+	else
+		current_player = 'w';
+	available_moves = get_available_moves();
+}
+vector<Position> Reversi::get_tiles(Position start_position, int x_step, int y_step){
+	char opp;
+	if(current_player == 'w')
+		opp = 'b';
+	else
+		opp = 'w';
+	int x = start_position.row;
+	int y = start_position.column;
+	
+	Position current_position;
+	current_position.row = x + x_step;
+	current_position.column = y + y_step;
+
+	vector<Position> position_switches;
+	bool self_check = false;
+	while(current_postion.row < 8 && current_position.column < 8 && board[current_position.row][current_position.column] != 'o' && current_postiton.row >= 0 && current_position.column >= 0){
+		if(board[current_position.row][current_position.column] == opp)
+			position_switches.push_back(current_position);
+		else if(board[current_postion.row][current_position.column] == self){
+			self_check = true;
+			break;
+		}
+		current_position.row+=x_step;
+		current_position.column+=y_step;
+	}
+	if(!self_check)
+		position_switches.clear();
+	return position_switches;
 }
 
 bool Reversi::make_random_move(){
@@ -113,11 +158,11 @@ bool Reversi::make_random_move(){
 	//make_move(string moves[random_index])
 }
 
-vector<Position> Reversi::get_available_moves(char side){
+vector<Position> Reversi::get_available_moves(){
 	char opponent;
-	if(side == 'w')				//determines oppenents color by given argument
+	if(current_player == 'w')				//determines oppenents color by given argument
 		opponent = 'b';
-	else if(side == 'b')
+	else if(current_player == 'b')
 		opponent = 'w';
 	vector<Position> temp_vec;
 	//needs to be finished
@@ -263,28 +308,28 @@ char Reversi::get_letter_of_number(int number){
 int Reversi::get_number_of_letter(char c){
 	switch (c){
 		case 'a':
-			return 1;
+			return 0;
 			break;
 		case 'b':
-			return 2;
+			return 1;
 			break;
 		case 'c':
-			return 3;
+			return 2;
 			break;
 		case 'd':
-			return 4;
+			return 3;
 			break;
 		case 'e':
-			return 5;
+			return 4;
 			break;
 		case 'f':
-			return 6;
+			return 5;
 			break;
 		case 'g':
-			return 7;
+			return 6;
 			break;
 		case 'h':
-			return 8;
+			return 7;
 			break;
 		default:
 			return -1;
