@@ -1,4 +1,6 @@
-all: Server reversi
+targets= Server Reversi Client
+
+all: $(targets)
 
 Server.o: Server.cpp Server.h
 	g++ -std=gnu++0x -c Server.cpp
@@ -15,8 +17,11 @@ Reversi.o: Reversi.cpp Reversi.h
 ReversiMain.o: ReversiMain.cpp Reversi.h
 	g++ -std=gnu++0x -c ReversiMain.cpp
 
-reversi: ReversiMain.o Reversi.o
-	g++ -std=gnu++0x -o reversi ReversiMain.o Reversi.o
+Reversi: ReversiMain.o Reversi.o
+	g++ -std=gnu++0x -o Reversi ReversiMain.o Reversi.o
 
+Client: Client.cpp
+	g++ -std=gnu++0x -lsocket -lnsl -o Client Client.cpp
+	
 clean:
-	rm -f *.o Server reversi
+	rm -f *.o $(targets)
