@@ -80,10 +80,9 @@ bool Reversi::make_move(string move){
 	stringstream s;
 	s.str(move);
 	int x = -1;
-	s >> x;
 	char c = 'x';
-	x << c;
-
+	s >> c;
+	s >> x;
 	// check if valid move
 	Position current_move;
 	current_move.row = x;
@@ -222,8 +221,8 @@ vector<Position> Reversi::get_available_moves(){
 	vector<Position> open_spaces = get_open_spaces();				//need to check every direction for every space
 	for(unsigned int i=0; i<open_spaces.size(); i++){
 		//check if board[i][j] is a possible move
-		int temp_x = i;		//set to x coord
-		int temp_y = 8;		//set to y coord
+		int temp_x = open_spaces[i].row;		//set to x coord
+		int temp_y = open_spaces[i].column;		//set to y coord
 		int x_step = 0;
 		int y_step = -1;
 		bool check_push_back = false;
