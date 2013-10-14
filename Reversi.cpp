@@ -88,8 +88,16 @@ bool Reversi::make_move(string move){
 	s.str(move);
 	int x = -1;
 	char c = 'x';
-	s >> c;
-	s >> x;
+	char temp_char1, temp_char2 = 'x';
+	s >> temp_char1 >> temp_char2;
+	if(isdigit(temp_char1)){
+		x = temp_char1;
+		c = temp_char2;
+	}
+	else if(isdigit(temp_char2)){
+		x = temp_char2;
+		c = temp_char1;
+	}
 	// check if valid move
 	Position current_move;
 	current_move.row = x;
