@@ -82,7 +82,7 @@ void Server::start(){
 void Server::play_game(int sock){
 	Reversi game;
 	socket_write(sock,"WELCOME\r\n");
-
+	cout << "wrote to socket\n";
 	string s,upper_s;
 	while(true){
 		// read incoming command fron client
@@ -93,14 +93,18 @@ void Server::play_game(int sock){
 		s=remove_newlines(s);
 		//cout << "'" << s << "'\n";
 		upper_s=capitalize(s);
-
+		cout << "Received: '" << upper_s << "'\n";
 		// for now, we ignore all difficulty commands
 		if(upper_s=="EXIT")
 			break;
-		if(upper_s=="WHITE")
+		else if(upper_s=="WHITE"){
 			game.set_current_player('w');
-		if(upper_s=="BLACK")
+			socket_write(sock,"OK\n");
+		}
+		else if(upper_s=="BLACK"){
 			game.set_current_player('b');
+			socket_write(sock,"OK\n");
+		}
 		else if(upper_s=="DISPLAY") {
 			string send_string = "OK\n\n";
 			send_string += game.get_state_string();
@@ -140,8 +144,10 @@ void Server::play_game(int sock){
 
 			socket_write(sock, send_string);
 		}
-		else
+		else{
 			socket_write(sock,"ILLEGAL\n");
+			cout << "move is... " << s << '\n';
+		}
 	}
 	close(sock);
 	exit(0);

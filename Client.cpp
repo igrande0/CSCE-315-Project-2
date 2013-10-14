@@ -72,21 +72,24 @@ int main(int argc, char * argv[]) {
 	int sock=socket(AF_INET, SOCK_STREAM,0);
 	connect(sock, (struct sockaddr *)&sin, sizeof(sin));
 	string s;
+	pid_t pid=fork();
 	while(true){
-		pid_t pid=fork();
 		if(pid==0){	//child
 			cout << socket_read(sock);
+			cout.flush();
 		}
 		else{
 			getline(cin, s);
 			if(socket_write(sock,s) == -1){
 				cout << "Connection terminated be server... Exiting\n";
 				close(sock);
+				kill(pid, SIGKILL);
 				exit(0);
 			}
 			if( capitalize(remove_beginning_whitespace(remove_newlines(s)))=="EXIT"){
 				cout << "Exiting game!\n";
 				close(sock);
+				kill(pid, SIGKILL);
 				exit(0);
 			}
 		}
