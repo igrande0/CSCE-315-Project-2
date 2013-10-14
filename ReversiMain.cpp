@@ -7,9 +7,9 @@ using namespace std;
 
 void random_move_loop(Reversi game) {
 	while(!game.is_game_over()) {
-		cout << "----------MAKE RANDOM MOVE----------";
+		cout << ";----------MAKE RANDOM MOVE----------\n";
 		game.make_random_move();
-		cout << "MOVE:" << game.get_previous_move();
+		cout << "MOVE:" << game.get_previous_move() << '\n';
 		cout << game.get_state_string();
 		sleep(2);
 	}
@@ -18,24 +18,24 @@ void random_move_loop(Reversi game) {
 int main() {
 	Reversi game;
 
-	cout << "----------SET PLAYER: WHITE----------";
+	cout << ";----------SET PLAYER: WHITE----------\n";
 	game.set_current_player('w');
 	sleep(2);
 
-	cout << "----------MAKE MOVE: d3----------";
-	game.make_move("d3");
+	cout << ";----------MAKE MOVE: d2----------\n";
+	game.make_move("d2");
 	cout << game.get_state_string();
 	sleep(2);
 
 	random_move_loop(game);
 
-	cout << "----------UNDO----------";
+	cout << ";----------UNDO----------\n";
 	game.undo();
 	sleep(2);
 
 	random_move_loop(game);
 
-	cout << "GAME OVER!";
+	cout << ";GAME OVER!";
 	cout << game.get_state_string();
 	sleep(2);
 }
