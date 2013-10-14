@@ -70,13 +70,18 @@ void Reversi::update_score(){
 
 bool Reversi::make_move(string move){
 	//check size of move
-	if(sizeof(move) != 2)
+	cout << "Making move!";
+	cout << sizeof(move);
+	if(move.size() != 2)
 		return false;
 	//check if user has chosen side
-	if(current_player = 'n')
+	cout << "Move sized correctly!\n";
+	cout << current_player;
+	if(current_player == 'n')
 		return false;
 
 	//split move into correct data types
+	cout << "Player has been set!\n";
 	stringstream s;
 	s.str(move);
 	int x = -1;

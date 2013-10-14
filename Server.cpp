@@ -85,7 +85,7 @@ void Server::play_game(int sock){
 	cout << "wrote to socket\n";
 	string s,upper_s;
 	while(true){
-		// read incoming command fron client
+		// read incoming command from client
 		socket_write(sock,"> ");
 		s=socket_read(sock);
 		//cout << "Read String: '" << s << "'\n";
