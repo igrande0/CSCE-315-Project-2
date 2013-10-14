@@ -81,12 +81,14 @@ void Server::start(){
 
 void Server::play_game(int sock){
 	Reversi game;
+	char user_color;
+	char ai_color;
 	socket_write(sock,"WELCOME\r\n");
 	cout << "wrote to socket\n";
 	string s,upper_s;
 	while(true){
 		// read incoming command from client
-		socket_write(sock,"> ");
+		// socket_write(sock,"> ");
 		s=socket_read(sock);
 		//cout << "Read String: '" << s << "'\n";
 		s=remove_beginning_whitespace(s);
@@ -98,14 +100,20 @@ void Server::play_game(int sock){
 		if(upper_s=="EXIT")
 			break;
 		else if(upper_s=="WHITE"){
-			if(game.set_current_player('w'))
+			if(game.set_current_player('w')) {
+				user_color = 'w';
+				ai_color = 'b';
 				socket_write(sock,"OK\n");
+			}
 			else
 				socket_write(sock,"ILLEGAL\n");
 		}
 		else if(upper_s=="BLACK"){
-			if(game.set_current_player('b'))
+			if(game.set_current_player('b')) {
+				user_color = 'b';
+				ai_color = 'w';
 				socket_write(sock,"OK\n");
+			}
 			else
 				socket_write(sock,"ILLEGAL\n");
 		}
@@ -140,10 +148,24 @@ void Server::play_game(int sock){
 			string send_string = "OK\n";
 
 			if(!game.is_game_over()) {
-				send_string += "\n";
-				game.make_random_move();
-				send_string += game.get_previous_move() + "\n";
-				send_string += game.get_state_string();
+				if(game.get_num_moves() > 0) {
+					send_string += "\n";
+					game.make_random_move();
+					send_string += game.get_previous_move() + "\n";
+					send_string += game.get_state_string();
+					
+					while(game.get_current_player() == ai_color){
+						send_string += "\n";
+						game.make_random_move();
+						send_string += game.get_previous_move() + "\n";
+						send_string += game.get_state_string();
+					}
+				}
+				else{
+					send_string += "\n";
+					send_string += game.get_previous_move() + "\n";
+					send_string += game.get_state_string();
+				}
 			}
 
 			socket_write(sock, send_string);

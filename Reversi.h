@@ -32,8 +32,11 @@ class Reversi{
 
 		int get_white_score() {return white_score;}
 		int get_black_score() {return black_score;}
+		int get_num_moves() {return available_moves.size();}
+		char get_current_player() {return current_player;}
 		string get_previous_move() {return previous_move;}
-		string get_state_string();						
+		string get_state_string();			
+		
 	private:
 		// STATE VARIABLES
 		/* internal - board[row][column]
@@ -48,16 +51,18 @@ class Reversi{
 		  0 1 2 3 4 5 6 7
 		*/
 		vector<vector<char> > board;
-		vector<Position> available_moves;
+		
 		int white_score;
 		int black_score;
 		char current_player = 'n';				//holds the players color whose turn it is
 		string previous_move;
 		list<State> previous_states;
+		vector<Position> available_moves;
 		
 		// PRIVATE UTILITY FUNCTIONS
 		int get_number_of_letter(char c);
 		char get_letter_of_number(int number);
+		void toggle_player();
 
 		vector<Position> get_available_moves();
 		vector<Position> get_open_spaces();

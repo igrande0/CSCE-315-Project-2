@@ -86,7 +86,7 @@ int main(int argc, char * argv[]) {
 				kill(pid, SIGKILL);
 				exit(0);
 			}
-			if( capitalize(remove_beginning_whitespace(remove_newlines(s)))=="EXIT"){
+			if(capitalize(remove_beginning_whitespace(remove_newlines(s)))=="EXIT"){
 				cout << "Exiting game!\n";
 				close(sock);
 				kill(pid, SIGKILL);
