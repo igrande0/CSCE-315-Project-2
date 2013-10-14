@@ -12,9 +12,11 @@ Reversi::Reversi() {
 	board[3][4] = 'b';
 	board[4][3] = 'b';
 	board[4][4] = 'w';
-
+	cout << "Created Board!\n";
 	available_moves = get_available_moves();
+	cout << "Got Moves\n";
 	update_score();
+	cout << "Updated Score!\n";
 }
 
 string Reversi::get_state_string(){
@@ -221,7 +223,7 @@ vector<Position> Reversi::get_available_moves(){
 	for(unsigned int i=0; i<open_spaces.size(); i++){
 		//check if board[i][j] is a possible move
 		int temp_x = i;		//set to x coord
-		int temp_y;// = j;		//set to y coord
+		int temp_y = 8;		//set to y coord
 		int x_step = 0;
 		int y_step = -1;
 		bool check_push_back = false;
@@ -234,6 +236,7 @@ vector<Position> Reversi::get_available_moves(){
 
 		//check below
 		y_step = 1;
+		temp_y=-1;
 		if(stepping_loop(x_step, y_step, temp_x, temp_y, opponent) && !check_push_back){		
 			temp_vec.push_back(open_spaces[i]);
 			check_push_back = true;
@@ -242,6 +245,8 @@ vector<Position> Reversi::get_available_moves(){
 		//check right
 		y_step = 0;
 		x_step = 1;
+		temp_y=i;
+		temp_x=-1;
 		if(stepping_loop(x_step, y_step, temp_x, temp_y, opponent) && !check_push_back){		
 			temp_vec.push_back(open_spaces[i]);
 			check_push_back = true;
@@ -249,6 +254,7 @@ vector<Position> Reversi::get_available_moves(){
 
 		//check left
 		x_step = -1;
+		temp_x=8;
 		if(stepping_loop(x_step, y_step, temp_x, temp_y, opponent) && !check_push_back){		
 			temp_vec.push_back(open_spaces[i]);
 			check_push_back = true;
@@ -256,6 +262,7 @@ vector<Position> Reversi::get_available_moves(){
 		y_step = -1;
 
 		//check top left
+		temp_x=8;
 		if(stepping_loop(x_step, y_step, temp_x, temp_y, opponent) && !check_push_back){		
 			temp_vec.push_back(open_spaces[i]);
 			check_push_back = true;
@@ -263,6 +270,7 @@ vector<Position> Reversi::get_available_moves(){
 
 		//check top right
 		x_step = 1;
+		temp_x=-1;
 		if(stepping_loop(x_step, y_step, temp_x, temp_y, opponent) && !check_push_back){		
 			temp_vec.push_back(open_spaces[i]);
 			check_push_back = true;
@@ -270,6 +278,7 @@ vector<Position> Reversi::get_available_moves(){
 
 		//check bottom right
 		y_step = 1;
+		temp_x=-1;
 		if(stepping_loop(x_step, y_step, temp_x, temp_y, opponent) && !check_push_back){		
 			temp_vec.push_back(open_spaces[i]);
 			check_push_back = true;
@@ -277,6 +286,7 @@ vector<Position> Reversi::get_available_moves(){
 
 		//check bottom left
 		x_step = -1;
+		temp_x=8;
 		if(stepping_loop(x_step, y_step, temp_x, temp_y, opponent) && !check_push_back){		
 			temp_vec.push_back(open_spaces[i]);
 			check_push_back = true;

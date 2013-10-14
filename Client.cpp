@@ -37,7 +37,7 @@ int socket_write(int sock,string msg){
 string socket_read(int sock){
 	char buf[MAX_MESSAGE];
 	int size=read(sock, buf, MAX_MESSAGE);
-	cout << "READ SIZE: " << size << '\n';
+	//cout << "READ SIZE: " << size << '\n';
 	string s = buf;
 	return s;
 }
@@ -73,16 +73,22 @@ int main(int argc, char * argv[]) {
 	connect(sock, (struct sockaddr *)&sin, sizeof(sin));
 	string s;
 	while(true){
-		cout << socket_read(sock) << "\n>";
-		getline(cin, s);
-		if(socket_write(sock,s) == -1){
-			cout << "Connection terminated be server... Exiting\n";
-			break;
+		pid_t pid=fork();
+		if(pid==0){	//child
+			cout << socket_read(sock);
 		}
-		if( capitalize(remove_beginning_whitespace(remove_newlines(s)))=="EXIT"){
-			cout << "Exiting game!\n";
-			close(sock);
-			break;
+		else{
+			getline(cin, s);
+			if(socket_write(sock,s) == -1){
+				cout << "Connection terminated be server... Exiting\n";
+				close(sock);
+				exit(0);
+			}
+			if( capitalize(remove_beginning_whitespace(remove_newlines(s)))=="EXIT"){
+				cout << "Exiting game!\n";
+				close(sock);
+				exit(0);
+			}
 		}
 	}
 }
