@@ -350,8 +350,13 @@ vector<Position> Reversi::get_open_spaces(){
 	vector<Position> open_spaces;		//creates temp vector to hold open spaces
 	for(unsigned int i=0; i<8; i++)
 		for(unsigned int j=0; j<8; j++)
-			if(board[i][j] == 'o')									//if the space is clear then push the integer and char of space
-				open_spaces.push_back({i+1,j+1});		
+			if(board[i][j] == 'o'){									//if the space is clear then push the integer and char of space
+				//open_spaces.push_back({i+1,j+1});
+				Position p;
+				p.row = i;
+				p.column = j;
+				open_spaces.push_back(p);
+			}
 	return open_spaces;												//return temp vector containing all open spaces
 }
 
