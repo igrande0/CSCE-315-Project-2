@@ -347,6 +347,17 @@ vector<Position> Reversi::get_open_spaces(){
 	return open_spaces;												//return temp vector containing all open spaces
 }
 
+bool Reversi::set_current_player(char player){
+	if(current_player != 'n')
+		return false;
+	else if(player == 'b' || player == 'w') {
+		current_player = player;
+		return true;
+	}
+	else
+		return false;
+}
+
 char Reversi::get_letter_of_number(int number){
 	switch (number){
 		case 1:

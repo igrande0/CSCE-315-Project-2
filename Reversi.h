@@ -28,7 +28,7 @@ class Reversi{
 		bool is_game_over();
 		void clear_board();
 
-		void set_current_player(char player) {current_player = player;}
+		bool set_current_player(char player);
 
 		int get_white_score() {return white_score;}
 		int get_black_score() {return black_score;}

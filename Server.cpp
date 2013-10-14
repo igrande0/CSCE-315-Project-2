@@ -98,12 +98,16 @@ void Server::play_game(int sock){
 		if(upper_s=="EXIT")
 			break;
 		else if(upper_s=="WHITE"){
-			game.set_current_player('w');
-			socket_write(sock,"OK\n");
+			if(game.set_current_player('w'))
+				socket_write(sock,"OK\n");
+			else
+				socket_write(sock,"ILLEGAL\n");
 		}
 		else if(upper_s=="BLACK"){
-			game.set_current_player('b');
-			socket_write(sock,"OK\n");
+			if(game.set_current_player('b'))
+				socket_write(sock,"OK\n");
+			else
+				socket_write(sock,"ILLEGAL\n");
 		}
 		else if(upper_s=="DISPLAY") {
 			string send_string = "OK\n\n";
