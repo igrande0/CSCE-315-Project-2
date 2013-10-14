@@ -20,27 +20,27 @@ Reversi::Reversi() {
 }
 
 string Reversi::get_state_string(){
-	string STRING;
-	STRING +=";_ _ _ _ _ _ _ _\n;";							//displays board and current score
+	string display_string;
+	display_string +=";  _ _ _ _ _ _ _ _\n;";							//displays board and current score
 	for(unsigned int i=0; i<8; i++){
-		STRING += i + "|";
+		display_string += to_string(i) + "|";
 		for(unsigned int j=0; j<8; j++){
 			if(board[i][j] == 'w')
-				STRING += "O|";
+				display_string += "O|";
 			else if(board[i][j] == 'b')
-				STRING += "@|";
+				display_string += "@|";
 			else
-				STRING += "_|";
+				display_string += "_|";
 		}
-		STRING += "\n;";
+		display_string += "\n;";
 	}
-	STRING += "a b c d e f g h\n";
-	STRING += ";White Score: ";
-	STRING += white_score;
-	STRING += "    Black Score: ";
-	STRING += black_score + "\n";
+	display_string += "  a b c d e f g h\n";
+	display_string += ";White Score: ";
+	display_string += to_string(white_score);
+	display_string += "    Black Score: ";
+	display_string += to_string(black_score) + "\n";
 
-	return STRING;
+	return display_string;
 }
 
 void Reversi::clear_board(){							//sets board to starting state of game
@@ -56,7 +56,7 @@ void Reversi::clear_board(){							//sets board to starting state of game
 
 
 void Reversi::update_score(){
-	int white_count, black_count = 0;
+	int white_count(0), black_count(0);
 	for(unsigned int i=0; i<8; i++)
 		for(unsigned int j=0; j<8; j++){
 			if(board[i][j] == 'w')
