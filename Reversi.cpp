@@ -2,6 +2,8 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <stdlib.h>
+#include <time.h>
 //#include <stdiolib.h>
 
 Reversi::Reversi() {
@@ -14,7 +16,7 @@ Reversi::Reversi() {
 	board[4][4] = 'w';
 	cout << "Created Board!\n";
 	available_moves = get_available_moves();
-	cout << "Got Moves\n";
+	cout << "Got Moves!\n";
 	update_score();
 	cout << "Updated Score!\n";
 }
@@ -188,9 +190,16 @@ vector<Position> Reversi::get_tiles(Position start_position, int x_step, int y_s
 }
 
 bool Reversi::make_random_move(){
-	int random_index = rand() % (available_moves.size()-1);
-	string s = get_letter_of_number(available_moves[random_index].column) + to_string(available_moves[random_index].row);
-	return make_move(s);
+	if(available_moves.size() == 0)
+		return false;
+
+	srand(time(NULL));
+	int random_index = rand() % available_moves.size();
+	Position move = available_moves[random_index];
+
+	string move_string = get_letter_of_number(move.column + 1) + to_string(move.row + 1);
+
+	return make_move(move_string);
 }
 
 
