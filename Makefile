@@ -1,4 +1,4 @@
-targets= Server Reversi Client
+targets = Server Reversi Client
 
 all: $(targets)
 
@@ -8,8 +8,8 @@ Server.o: Server.cpp Server.h
 Main.o: Main.cpp Server.h
 	g++ -std=gnu++0x -c Main.cpp
 
-Server: Server.o Main.o
-	g++ -std=gnu++0x -lsocket -o Server Main.o Server.o
+Server: Server.o Reversi.o Main.o
+	g++ -std=gnu++0x -lsocket -o Server Main.o Reversi.o Server.o
 
 Reversi.o: Reversi.cpp Reversi.h
 	g++ -std=gnu++0x -c Reversi.cpp

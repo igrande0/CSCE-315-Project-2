@@ -4,9 +4,15 @@
 #include <stdexcept>
 //#include <stdiolib.h>
 
+Reversi::Reversi() {
+	clear_board();
+	available_moves = get_available_moves();
+	update_score();
+}
+
 string Reversi::get_state_string(){
 	string STRING;
-	STRING +="_ _ _ _ _ _ _ _\n";							//displays board and current score
+	STRING +=";_ _ _ _ _ _ _ _\n;";							//displays board and current score
 	for(unsigned int i=0; i<8; i++){
 		STRING += i + "|";
 		for(unsigned int j=0; j<8; j++){
@@ -17,10 +23,10 @@ string Reversi::get_state_string(){
 			else
 				STRING += "_|";
 		}
-		STRING += "\n";
+		STRING += "\n;";
 	}
 	STRING += "a b c d e f g h\n";
-	STRING += "White Score: ";
+	STRING += ";White Score: ";
 	STRING += white_score;
 	STRING += "    Black Score: ";
 	STRING += black_score + "\n";
@@ -57,6 +63,10 @@ bool Reversi::make_move(string move){
 	//check size of move
 	if(sizeof(move) != 2)
 		return false;
+	//check if user has chosen side
+	if(current_player = 'n')
+		return false;
+
 	//split move into correct data types
 	stringstream s;
 	s.str(move);
@@ -64,6 +74,7 @@ bool Reversi::make_move(string move){
 	s >> x;
 	char c = 'x';
 	x << c;
+
 	// check if valid move
 	Position current_move;
 	current_move.row = x;
@@ -76,6 +87,14 @@ bool Reversi::make_move(string move){
 
 	if(!possible_move_check)
 		return false;
+
+	// save previous state
+	// only need to support 10 undos (20 total saved states)
+	if(previous_states.size() >= 20)
+		previous_states.pop_back();
+	
+	previous_states.push_front({board, available_moves, white_score, black_score, current_player});
+	previous_move = move;
 
 	//check all directions
 	//if valid in a direction flip all appropriate tiles
@@ -124,6 +143,7 @@ bool Reversi::make_move(string move){
 		current_player = 'w';
 	available_moves = get_available_moves();
 }
+
 vector<Position> Reversi::get_tiles(Position start_position, int x_step, int y_step){
 	char opp;
 	if(current_player == 'w')
@@ -157,28 +177,29 @@ vector<Position> Reversi::get_tiles(Position start_position, int x_step, int y_s
 bool Reversi::make_random_move(){
 	int random_index = rand() % (available_moves.size()-1);
 	string s = get_letter_of_number(available_moves[random_index].column) + to_string(available_moves[random_index].row);
-	make_move(s);
-	//turn moves[random_index] into a string
-	//make_move(string moves[random_index])
+	return make_move(s);
 }
 
 
 bool Reversi::undo(){
-	State last_state;
-
 	if(previous_states.size() < 2)
 		return false;
 
+	State last_state;
+
 	// remove other player's move
-	previous_states.pop();
+	previous_states.pop_front();
 
 	// revert to state before last move
-	last_state = previous_states.top();
+	last_state = previous_states.front();
 	board = last_state.board;
 	available_moves = last_state.available_moves;
 	white_score = last_state.white_score;
 	black_score = last_state.black_score;
 	current_player = last_state.current_player;
+
+	// remove player's move
+	previous_states.pop_front();
 }
 
 vector<Position> Reversi::get_available_moves(){

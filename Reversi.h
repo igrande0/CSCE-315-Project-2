@@ -1,9 +1,8 @@
 #include <string>
 #include <vector>
-#include <stack>
+#include <list>
 
 using namespace std;
-
 
 struct Position {
 	unsigned int row;
@@ -15,43 +14,26 @@ struct State {
 	vector<Position> available_moves;
 	int white_score;
 	int black_score;
-	char current_player; 
+	char current_player;
 };
 
 class Reversi{
 	public:
-		void clear_board();
-		/* POSSIBLE FUNCTIONS */
-		
-		/*	play_game();
-			LOOP
-			-----SEND STATE THROUGH SOCKET-----
-			send board string
-			send moves
-			send score
-			-----GET USER'S MOVE-----
-			send state
-			read user's move 
-			make_move(user's move)
-			is_game_over()
-			-----MAKE RANDOM MOVE-----
-			send state
-			make_random_move()
-			is_game_over()
-			
-			END GAME
-		*/
-		void play_game(int file_descriptor);				//ignore for now
-		
-		bool make_random_move();							//done
-		bool make_move(string move);						//needs to be completed
-		
+		Reversi();
+
+		bool make_move(string move);
+		bool make_random_move();
 		bool undo();
                 
-		bool is_move_valid(Position move);					//done
-		bool is_game_over();								//done
-		
-		string get_state_string();							//needs to be changed into a concatenated string					
+		bool is_game_over();
+		void clear_board();
+
+		void set_current_player(char player) {current_player = player;}
+
+		int get_white_score() {return white_score;}
+		int get_black_score() {return black_score;}
+		string get_previous_move() {return previous_move;}
+		string get_state_string();						
 	private:
 		// STATE VARIABLES
 		/* internal - board[row][column]
@@ -69,15 +51,19 @@ class Reversi{
 		vector<Position> available_moves;
 		int white_score;
 		int black_score;
-		char current_player;				//holds the players color whose turn it is
-		stack<State> previous_states;
+		char current_player = 'n';				//holds the players color whose turn it is
+		string previous_move;
+		list<State> previous_states;
 		
 		// PRIVATE UTILITY FUNCTIONS
-		int get_number_of_letter(char c);			//done
-		char get_letter_of_number(int number);		//done
-		vector<Position> get_available_moves();		//done
-		vector<Position> get_open_spaces();			//done
-		bool stepping_loop(int x_step, int y_step, int x, int y, char opp);		//done
-		void update_score();															//done
+		int get_number_of_letter(char c);
+		char get_letter_of_number(int number);
+
+		vector<Position> get_available_moves();
+		vector<Position> get_open_spaces();
+		bool is_move_valid(Position move);
+
+		bool stepping_loop(int x_step, int y_step, int x, int y, char opp);
 		vector<Position> get_tiles(Position start_position, int x_step, int y_step);
+		void update_score();
 };

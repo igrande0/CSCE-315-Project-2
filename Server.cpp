@@ -1,27 +1,10 @@
 #include "Server.h"
+#include "Reversi.h"
 
 #define MAX_MESSAGE 512 //max read size
 using namespace std;
 
-void play_game(int);
-bool make_move(string);
-
-//Constructors
-Server::Server(){};
-Server::Server(int i): port(i) {};
-Server::~Server(){
-	close(master_sock);
-}
-	
-//Getters
-int Server::get_port(){ return port;}
-int Server::get_master_sock(){return master_sock;}
-	
-//Setters
-void Server::set_port(int i){port=i;}
-void Server::set_master_sock(int i){master_sock=i;}
-	
-//Private Members
+// Private Members
 string Server::remove_beginning_whitespace(string s){
 	int i=0;
 	while(s[i]==' '){
@@ -57,7 +40,7 @@ string Server::capitalize(string s){
 	return s;
 }
 	
-//Members
+// Members
 void Server::acquire_master_sock(int port, int backlog) {
 	struct sockaddr_in sin; /* Internet endpoint address */
 	memset(&sin, 0, sizeof(sin)); /* Zero out address */
@@ -90,62 +73,78 @@ void Server::start(){
 		}
 		if(fork()==0){ //child
 			close(master_sock);
-			socket_write(s_sock,"WELCOME\r\n");
-			string s,upper_s;
-			while(true){
-				socket_write(s_sock,"Please Enter a command\n> ");
-				s=socket_read(s_sock);
-				cout << "Read String: '" << s << "'\n";
-				s=remove_beginning_whitespace(s);
-				s=remove_newlines(s);
-				cout << "'" << s << "'\n";
-				upper_s=capitalize(s);
-				if(upper_s=="EXIT") break;
-				else if(upper_s=="DISPLAY")  socket_write(s_sock,"Displaying board!\n");
-				else if(upper_s	=="EASY" || upper_s=="MEDIUM" || upper_s=="HARD") socket_write(s_sock,"Set difficulty!\n");
-				else if(upper_s=="UNDO") socket_write(s_sock,"undo\n");
-				else if(upper_s=="HUMAN-AI") socket_write(s_sock,"Human game!\n");
-				else if(upper_s.substr(0,5)=="AI-AI"){
-					upper_s=upper_s.substr(6); //This will remove "AI-AI "
-					string server=get_word(upper_s);
-					int port= atoi(get_word(upper_s).c_str());
-					string difficulty1=get_word(upper_s);
-					string difficulty2=upper_s;
-					string return_str="AI-AI game on " + server + "on port " + to_string(port) + " as " + difficulty1 + " vs " + difficulty2 + "\n";
-					socket_write(s_sock, return_str);
-				}
-				else if(s[0]==';')  socket_write(s_sock,"comment\n");
-				else{
-					if(make_move(s)){
-						socket_write(s_sock,"Successfully made move!\n");
-					}
-					else{
-						socket_write(s_sock,"Failed to make move!\n");
-					}
-				}
-			}
-			close(s_sock);
-			exit(0);
+			play_game(s_sock);
 		}
 		close(s_sock);
 	}
 }
 
-void play_game(int sock){
-	char buff[512];
-	write(sock, "Success!\n>", 12);
-	int size=read(sock,buff,512);
-	//cout << "Received: " << buff;
-	write(sock, "Received: ",10);
-	write(sock,buff,size);
-	write(sock,"Game Play Functionality Verified, Bye!\r\n",42);
-}
+void Server::play_game(int sock){
+	Reversi game;
+	socket_write(sock,"WELCOME\r\n");
 
-bool make_move(string s){
-	cout << "Making move: " << s <<'\n';
-	//if(move(s)) return true;
-	//else return false;
-	return true;
+	string s,upper_s;
+	while(true){
+		// read incoming command fron client
+		socket_write(sock,"> ");
+		s=socket_read(sock);
+		//cout << "Read String: '" << s << "'\n";
+		s=remove_beginning_whitespace(s);
+		s=remove_newlines(s);
+		//cout << "'" << s << "'\n";
+		upper_s=capitalize(s);
+
+		// for now, we ignore all difficulty commands
+		if(upper_s=="EXIT")
+			break;
+		if(upper_s=="WHITE")
+			game.set_current_player('w');
+		if(upper_s=="BLACK")
+			game.set_current_player('b');
+		else if(upper_s=="DISPLAY") {
+			string send_string = "OK\n\n";
+			send_string += game.get_state_string();
+			socket_write(sock, send_string);
+		}
+		/*else if(upper_s	=="EASY" || upper_s=="MEDIUM" || upper_s=="HARD")
+			socket_write(sock,"Set difficulty!\n");*/
+		else if(upper_s=="UNDO") {
+			if(game.undo())
+				socket_write(sock,"OK\n");
+			else
+				socket_write(sock,"ILLEGAL\n");
+		}
+		/*else if(upper_s=="HUMAN-AI")
+			socket_write(sock,"Human game!\n");*/
+		/*else if(upper_s.substr(0,5)=="AI-AI"){
+			upper_s = upper_s.substr(6); //This will remove "AI-AI "
+			string server = get_word(upper_s);
+			int port = atoi(get_word(upper_s).c_str());
+			string difficulty1 = get_word(upper_s);
+			string difficulty2 = upper_s;
+			string return_str = "AI-AI game on " + server + "on port "to_string(port);
+			return_str += " as " + difficulty1 + " vs " + difficulty2 + "\n";
+			socket_write(sock, return_str);
+		}*/
+		else if(s[0]==';')
+			;// do nothing?
+		else if(game.make_move(s)) {
+			string send_string = "OK\n";
+
+			if(!game.is_game_over()) {
+				send_string += "\n";
+				game.make_random_move();
+				send_string += game.get_previous_move() + "\n";
+				send_string += game.get_state_string();
+			}
+
+			socket_write(sock, send_string);
+		}
+		else
+			socket_write(sock,"ILLEGAL\n");
+	}
+	close(sock);
+	exit(0);
 }
 
 int Server::socket_write(int sock,string msg){
