@@ -5,7 +5,14 @@
 //#include <stdiolib.h>
 
 Reversi::Reversi() {
-	clear_board();
+	for(unsigned int i = 0; i < 8; ++i)
+		board.push_back({'o','o','o','o','o','o','o','o'});
+
+	board[3][3] = 'w';
+	board[3][4] = 'b';
+	board[4][3] = 'b';
+	board[4][4] = 'w';
+
 	available_moves = get_available_moves();
 	update_score();
 }
