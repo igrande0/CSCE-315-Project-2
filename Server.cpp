@@ -67,7 +67,7 @@ void Server::start(){
 	
 	for(;;){
 		s_sock=accept(master_sock,(struct sockaddr*)&fsin,&addr_len);
-		cout << "Accepting Connection: " << s_sock << " On port: " << port << '\n';
+		//cout << "Accepting Connection: " << s_sock << " On port: " << port << '\n';
 		if (s_sock < 0){
 			exit(2);
 		}
@@ -84,7 +84,7 @@ void Server::play_game(int sock){
 	char user_color;
 	char ai_color;
 	socket_write(sock,"WELCOME\r\n");
-	cout << "wrote to socket\n";
+	//cout << "wrote to socket\n";
 	string s,upper_s;
 	while(true){
 		// read incoming command from client
@@ -95,7 +95,7 @@ void Server::play_game(int sock){
 		s=remove_newlines(s);
 		//cout << "'" << s << "'\n";
 		upper_s=capitalize(s);
-		cout << "Received: '" << upper_s << "'\n";
+		//cout << "Received: '" << upper_s << "'\n";
 		// for now, we ignore all difficulty commands
 		if(upper_s=="EXIT")
 			break;
@@ -172,7 +172,7 @@ void Server::play_game(int sock){
 		}
 		else{
 			socket_write(sock,"ILLEGAL\n");
-			cout << "move is... " << s << '\n';
+			//cout << "move is... " << s << '\n';
 		}
 	}
 	close(sock);
@@ -192,7 +192,7 @@ int Server::socket_write(int sock,string msg){
 string Server::socket_read(int sock){
 	char buf[MAX_MESSAGE];
 	int size=read(sock, buf, MAX_MESSAGE);
-	cout << "READ SIZE: " << size << '\n';
+	//cout << "READ SIZE: " << size << '\n';
 	string s = buf;
 	return s;
 }

@@ -14,10 +14,10 @@ Reversi::Reversi() {
 	board[3][4] = 'b';
 	board[4][3] = 'b';
 	board[4][4] = 'w';
-	cout << "Created Board!\n";
-	cout << "Got Moves!\n";
+	//cout << "Created Board!\n";
+	//cout << "Got Moves!\n";
 	update_score();
-	cout << "Updated Score!\n";
+	//cout << "Updated Score!\n";
 }
 
 string Reversi::get_state_string(){
@@ -71,19 +71,19 @@ void Reversi::update_score(){
 
 bool Reversi::make_move(string move){
 	//check size of move
-	cout << "Making move!\n";
-	cout << "size of move:" <<  sizeof(move) << endl;
+	//cout << "Making move!\n";
+	//cout << "size of move:" <<  sizeof(move) << endl;
 	if(move.size() != 2)
 		return false;
 	//check if user has chosen side
-	cout << "Move sized correctly!\n";
-	cout << "current player:" << current_player << endl;
+	//cout << "Move sized correctly!\n";
+	//cout << "current player:" << current_player << endl;
 	if(current_player == 'n')
 		return false;
 
 	//split move into correct data types
-	cout << "Player has been set!\n";
-	cout << "Move string: " << move << endl;
+	//cout << "Player has been set!\n";
+	//cout << "Move string: " << move << endl;
 
 	Position current_move;
 	if(isalpha(move[0])) {
@@ -94,8 +94,8 @@ bool Reversi::make_move(string move){
 		current_move.row = get_number_of_letter(move[0]);
 		current_move.column = move[1]-'0'-1;
 	}
-	cout << "row: " << current_move.row << endl;
-	cout << "column: " << current_move.column << endl;
+	//cout << "row: " << current_move.row << endl;
+	//cout << "column: " << current_move.column << endl;
 
 	// check if valid move
 	bool possible_move_check = false;
@@ -105,7 +105,7 @@ bool Reversi::make_move(string move){
 
 	if(!possible_move_check)
 		return false;
-	cout << "Move is valid!\n";
+	//cout << "Move is valid!\n";
 
 	// save previous state
 	// only need to support 10 undos (20 total saved states)
@@ -242,7 +242,7 @@ vector<Position> Reversi::get_available_moves(){
 	//needs to be finished
 	vector<Position> open_spaces = get_open_spaces();				//need to check every direction for every space
 
-	cout << "Number of open spaces:" << open_spaces.size() << endl;
+	//cout << "Number of open spaces:" << open_spaces.size() << endl;
 	for(unsigned int i=0; i<open_spaces.size(); i++){
 		//check if board[i][j] is a possible move
 		int temp_x = open_spaces[i].row;		//set to x coord
