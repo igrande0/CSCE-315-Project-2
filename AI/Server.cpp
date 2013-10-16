@@ -3,6 +3,9 @@
 #include "AI.h"
 
 #define MAX_MESSAGE 512 //max read size
+#define EASY 10
+#define MEDIUM 25
+#define HARD 50
 using namespace std;
 
 // Private Members
@@ -83,9 +86,9 @@ void Server::start(){
 void Server::play_game(int sock){
 	Reversi game;
 	AI ai;
-	char user_color;
-	char ai_color;
-	char game_type; // ==r for random ==s for smart
+	char user_color='u';
+	char ai_color='u'; //u for unknown
+	char game_type='u'; // ==r for random ==e,m,h for easy/medium/hard ==u for unknown
 	string ai_move; //AI will be passed the entire board so it can play the game out as needed and return its current move.
 	socket_write(sock,"WELCOME\r\n");
 	//cout << "wrote to socket\n";
@@ -100,7 +103,6 @@ void Server::play_game(int sock){
 		//cout << "'" << s << "'\n";
 		upper_s=capitalize(s);
 		//cout << "Received: '" << upper_s << "'\n";
-		// for now, we ignore all difficulty commands
 		if(upper_s=="EXIT")
 			break;
 		else if(upper_s=="WHITE"){
@@ -126,36 +128,96 @@ void Server::play_game(int sock){
 			send_string += game.get_state_string();
 			socket_write(sock, send_string);
 		}
-		/*else if(upper_s	=="EASY" || upper_s=="MEDIUM" || upper_s=="HARD")
-			socket_write(sock,"Set difficulty!\n");*/
+		else if(upper_s	=="EASY" || upper_s=="MEDIUM" || upper_s=="HARD" || upper_s=="RANDOM_GAME")
+			if(upper_s=="EASY") game_type='e';
+			else if(upper_s=="MEDIUM") game_type=='m';
+			else if(upper_s=="HARD") game_type='h';
+			else game_type='r';
+			socket_write(sock,"OK\n");
 		else if(upper_s=="UNDO") {
+			//if(game_type=='u' || user_color=='u' || ai_color=='u'){ unknown so don't allow move...}
 			if(game.undo())
 				socket_write(sock,"OK\n");
 			else
 				socket_write(sock,"ILLEGAL\n");
 		}
-		/*else if(upper_s=="HUMAN-AI")
-			socket_write(sock,"Human game!\n");*/
-		/*else if(upper_s.substr(0,5)=="AI-AI"){
+		else if(upper_s=="HUMAN-AI"){
+			game_type='s';
+			socket_write(sock,"OK\n");
+		}
+		else if(upper_s.substr(0,5)=="AI-AI"){
+			bool error=false;
+			int AI_sock;
+			string move, opponent_move;
 			upper_s = upper_s.substr(6); //This will remove "AI-AI "
 			string server = get_word(upper_s);
 			int port = atoi(get_word(upper_s).c_str());
 			string difficulty1 = get_word(upper_s);
 			string difficulty2 = upper_s;
-			string return_str = "AI-AI game on " + server + "on port "to_string(port);
-			return_str += " as " + difficulty1 + " vs " + difficulty2 + "\n";
-			socket_write(sock, return_str);
-		}*/
+			
+			struct sockaddr_in sin;
+			memset(&sin,0,sizeof(sin));
+			sin.sin_family=AF_INET;
+			sin.sin_port=port;
+			string host=server;
+			if(struct hostent * phe=gethostbyname(host.c_str())){
+				memcpy(&sin.sin_addr, phe->h_addr, phe->h_length);
+			}
+			else if ((sin.sin_addr.s_addr=inet_addr(host.c_str())) == INADDR_NONE){
+				error=true;
+			}
+			if(!AI_sock=socket(AF_INET, SOCK_STREAM,0)){
+				error=true;
+			}
+			if(!connect(sock, (struct sockaddr *)&sin, sizeof(sin))){
+				error=true;
+			}
+			string s;
+			if(error){
+					sock_write(sock,"ILLEGAL\n");
+					sock_write(sock, ";Command is valid, but unable to connect with specified server\n");
+			}
+			else{
+				sock_write(sock,"OK\n");
+				sock_write(AI_sock,"HUMAN-AI");
+				sock_write(sock,"HUMAN-AI\n");
+				sock_write(sock,sock_read(AI_sock));
+				sock_write(AI_sock,"WHITE");
+				sock_write(sock,"WHITE\n");
+				sock_write(sock,sock_read(AI_sock));
+				sock_write(AI_sock,"HARD");
+				sock_write(sock,"HARD\n");
+				sock_write(sock,sock_read(AI_sock));
+				while true{
+					move=ai.make_move(game,HARD);
+					game.make_move(move);
+					sock_write(AI_sock,move);
+					sock_write(sock,move);
+					sock_write(sock,sock_read(AI_sock));
+					opponent_move=sock_read(AI_sock);    //Note string parsing will have to be done here.
+					game.make_move(opponent_move);
+					sock_write(sock,opponent_move);
+				}
+			}
+		}
 		else if(s[0]==';')
 			;// do nothing?
 		else if(game.make_move(s)) {
 			string send_string = "OK\n";
-
+			//if(game_type=='u' || user_color=='u' || ai_color=='u'){ unknown so don't allow move...}
 			if(!game.is_game_over()) {
 				if(game.get_num_moves() > 0) {
 					send_string += "\n";
-					if(game_type=='s'){
-						ai_move=ai.make_move(game);
+					if(game_type=='e'){
+						ai_move=ai.make_move(game,EASY);
+						game.make_move(ai_move);
+					}
+					else if(game_type=='m'){
+						ai_move=ai.make_move(game,MEDIUM);
+						game.make_move(ai_move);
+					}
+					else if(game_type=='h'){
+						ai_move=ai.make_move(game,HARD);
 						game.make_move(ai_move);
 					}
 					else{
