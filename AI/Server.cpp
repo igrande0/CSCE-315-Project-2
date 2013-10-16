@@ -142,7 +142,6 @@ void Server::play_game(int sock){
 				socket_write(sock,"ILLEGAL\n");
 		}
 		else if(upper_s=="HUMAN-AI"){
-			game_type='s';
 			socket_write(sock,"OK\n");
 		}
 		else if(upper_s.substr(0,5)=="AI-AI"){
@@ -188,13 +187,19 @@ void Server::play_game(int sock){
 				sock_write(AI_sock,"HARD");
 				sock_write(sock,"HARD\n");
 				sock_write(sock,sock_read(AI_sock));
-				while true{
+				while(true){
 					move=ai.make_move(game,HARD);
 					game.make_move(move);
 					sock_write(AI_sock,move);
 					sock_write(sock,move);
-					sock_write(sock,sock_read(AI_sock));
 					opponent_move=sock_read(AI_sock);    //Note string parsing will have to be done here.
+					/*****************
+					Regex for [a-j][1-8]
+					might be multiple moves
+					in opponent_move so push all
+					the regex matches into vector
+					and then pop out later.
+					*****************/
 					game.make_move(opponent_move);
 					sock_write(sock,opponent_move);
 				}
