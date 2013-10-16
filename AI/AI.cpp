@@ -5,12 +5,14 @@ It does something like chose the maximum value that will give your opponent a mi
 */
 
 //Constructors
-AI:AI(){ };
+AI::AI(){ };
 
 //AI public functions
 
-bool AI::make_move(Reversi){
-	return true;
+string AI::make_move(Reversi game){
+	while(true){
+		break;
+	}
 }
 
 //AI Private functions

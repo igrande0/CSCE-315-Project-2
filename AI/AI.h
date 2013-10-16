@@ -27,15 +27,25 @@ http://en.wikipedia.org/wiki/Minimax */
 
 struct Position;
 
-struct char_value{
+/*struct char_value{
   char status;
   int value;
 };
-
+*/
 class AI{
 	//Private Data Members
 	Reversi inital_game;
-	
+	int value_table[8][8]=
+	{
+		{ 99, -8, 8, 6, 6, 8, -8, 99},
+		{ -8, -24, -4, -3, -3, -4, -24, -8},
+		{ 8, -4, 7, 4, 4, 7, -4, 8},
+		{ 6, -3, 4, 0, 0, 4, -3, 6},
+		{ 6, -3, 4, 0, 0, 4, -3, 6},
+		{ 8, -4, 7, 4, 4, 7, -4, 8},
+		{ -8, -24, -4, -3, -3, -4, -24, -8},
+		{ 99, -8, 8, 6, 6, 8, -8, 99}
+	};  //Table containing tile values
 	//Private Functions
 	Position max_move(vector<vector<char_value> >);
 	
@@ -46,7 +56,7 @@ public:
 	AI();
 	
 	//Public Member Functions
-	bool make_move(Reversi);
+	string make_move(Reversi);
 	
 };
 

@@ -1,3 +1,6 @@
+#ifndef SERVER_H_
+#define SERVER_H_
+
 #include <sys/socket.h>
 #include <iostream>
 #include <unistd.h>
@@ -41,3 +44,5 @@ public:
 	int socket_write(int,string);
 	string socket_read(int);
 };
+
+#endif
