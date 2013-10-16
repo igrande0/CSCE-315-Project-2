@@ -47,19 +47,19 @@ class AI{
 		{ 99, -8, 8, 6, 6, 8, -8, 99}
 	};  //Table containing tile values
 	//Private Functions
-	Position max_move(vector<vector<char_value> >);
+	int max_move(Reversi game, char player_color, int depth);
+	int min_move(Reversi game, char player_color, int depth);
 	
-	Position min_move(vector<vector<char_value> >);
-	string make_educated_move();
-	string make_greedy_move();
-	int total_in_direction(Position start_position, int x_step, int y_step)
+	string get_minimax_move();
+	string get_educated_move();
+	string get_greedy_move();
+	int total_in_direction(Position start_position, int x_step, int y_step);
 public:
 	//Constructor
 	AI();
 	
 	//Public Member Functions
-	string make_move(Reversi);
-	
+	string get_move(Reversi);
 };
 
 #endif
