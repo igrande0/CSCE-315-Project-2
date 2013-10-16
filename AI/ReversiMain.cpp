@@ -9,7 +9,7 @@ void random_move_loop(Reversi game) {
 	while(!game.is_game_over()) {
 		cout << ";----------MAKE RANDOM MOVE----------\n";
 		game.make_random_move();
-		cout << "PREVIOUS MOVE:" << game.get_previous_move() << '\n';
+		cout << "MOVE:" << game.get_previous_move() << '\n';
 		cout << game.get_state_string();
 		sleep(2);
 	}
@@ -20,7 +20,7 @@ int main() {
 
 	cout << ";----------SET PLAYER: WHITE----------\n";
 	game.set_current_player('w');
-	cout << "Number of available moves:" << game.get_num_moves() << endl;
+	//cout << "Number of available moves:" << game.get_num_moves() << endl;
 	sleep(2);
 
 	cout << ";----------MAKE MOVE: d6----------\n";

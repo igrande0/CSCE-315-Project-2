@@ -81,13 +81,13 @@ int main(int argc, char * argv[]) {
 		else{
 			getline(cin, s);
 			if(socket_write(sock,s) == -1){
-				cout << "Connection terminated be server... Exiting\n";
+				//cout << "Connection terminated be server... Exiting\n";
 				close(sock);
 				kill(pid, SIGKILL);
 				exit(0);
 			}
 			if(capitalize(remove_beginning_whitespace(remove_newlines(s)))=="EXIT"){
-				cout << "Exiting game!\n";
+				//cout << "Exiting game!\n";
 				close(sock);
 				kill(pid, SIGKILL);
 				exit(0);
