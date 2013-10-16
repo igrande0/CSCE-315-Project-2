@@ -6,6 +6,7 @@
 #include <time.h>
 //#include <stdiolib.h>
 
+//Constructor
 Reversi::Reversi() {
 	for(unsigned int i = 0; i < 8; ++i)
 		board.push_back({'o','o','o','o','o','o','o','o'});
@@ -20,54 +21,7 @@ Reversi::Reversi() {
 	//cout << "Updated Score!\n";
 }
 
-string Reversi::get_state_string(){
-	string display_string;
-	display_string +=";  _ _ _ _ _ _ _ _\n;";							//displays board and current score
-	for(unsigned int i=0; i<8; i++){
-		display_string += to_string(i+1) + "|";
-		for(unsigned int j=0; j<8; j++){
-			if(board[i][j] == 'w')
-				display_string += "O|";
-			else if(board[i][j] == 'b')
-				display_string += "@|";
-			else
-				display_string += "_|";
-		}
-		display_string += "\n;";
-	}
-	display_string += "  a b c d e f g h\n";
-	display_string += ";White Score: ";
-	display_string += to_string(white_score);
-	display_string += "    Black Score: ";
-	display_string += to_string(black_score) + "\n";
-
-	return display_string;
-}
-
-void Reversi::clear_board(){							//sets board to starting state of game
-	for(unsigned int i=0; i<8; i++)
-		for(unsigned int j=0; j<8; j++)
-			board[i][j] = 'o';
-	board[3][3] = 'w';
-	board[3][4] = 'b';
-	board[4][3] = 'b';
-	board[4][4] = 'w';
-	update_score();									//updates score
-}
-
-
-void Reversi::update_score(){
-	int white_count(0), black_count(0);
-	for(unsigned int i=0; i<8; i++)
-		for(unsigned int j=0; j<8; j++){
-			if(board[i][j] == 'w')
-				white_count++;
-			else if(board[i][j] == 'b')
-				black_count++;
-		}			
-	white_score = white_count;
-	black_score = black_count;
-}
+//Public functions
 
 bool Reversi::make_move(string move){
 	//check size of move
@@ -166,36 +120,6 @@ bool Reversi::make_move(string move){
 	}
 }
 
-vector<Position> Reversi::get_tiles(Position start_position, int x_step, int y_step){
-	char opp;
-	if(current_player == 'w')
-		opp = 'b';
-	else
-		opp = 'w';
-	int x = start_position.row;
-	int y = start_position.column;
-	
-	Position current_position;
-	current_position.row = x + x_step;
-	current_position.column = y + y_step;
-
-	vector<Position> position_switches;
-	bool self_check = false;
-	while(current_position.row < 8 && current_position.column < 8 && board[current_position.row][current_position.column] != 'o' && current_position.row >= 0 && current_position.column >= 0){
-		if(board[current_position.row][current_position.column] == opp)
-			position_switches.push_back(current_position);
-		else if(board[current_position.row][current_position.column] == current_player){
-			self_check = true;
-			break;
-		}
-		current_position.row+=x_step;
-		current_position.column+=y_step;
-	}
-	if(!self_check)
-		position_switches.clear();
-	return position_switches;
-}
-
 bool Reversi::make_random_move(){
 	if(available_moves.size() == 0)
 		return false;
@@ -208,7 +132,6 @@ bool Reversi::make_random_move(){
 
 	return make_move(move_string);
 }
-
 
 bool Reversi::undo(){
 	if(previous_states.size() < 2)
@@ -230,6 +153,70 @@ bool Reversi::undo(){
 
 	// remove player's move
 	previous_states.pop_front();
+}
+
+bool Reversi::is_game_over(){
+	vector<Position> open_spaces = get_open_spaces();
+	if(open_spaces.size() == 0)
+		return true;
+	else
+		return false;
+}
+
+void Reversi::clear_board(){							//sets board to starting state of game
+	for(unsigned int i=0; i<8; i++)
+		for(unsigned int j=0; j<8; j++)
+			board[i][j] = 'o';
+	board[3][3] = 'w';
+	board[3][4] = 'b';
+	board[4][3] = 'b';
+	board[4][4] = 'w';
+	update_score();									//updates score
+}
+
+bool Reversi::set_current_player(char player){
+	if(current_player != 'n')
+		return false;
+	else if(player == 'b' || player == 'w') {
+		current_player = player;
+		available_moves = get_available_moves();
+		return true;
+	}
+	else
+		return false;
+}
+
+string Reversi::get_state_string(){
+	string display_string;
+	display_string +=";  _ _ _ _ _ _ _ _\n;";							//displays board and current score
+	for(unsigned int i=0; i<8; i++){
+		display_string += to_string(i+1) + "|";
+		for(unsigned int j=0; j<8; j++){
+			if(board[i][j] == 'w')
+				display_string += "O|";
+			else if(board[i][j] == 'b')
+				display_string += "@|";
+			else
+				display_string += "_|";
+		}
+		display_string += "\n;";
+	}
+	display_string += "  a b c d e f g h\n";
+	display_string += ";White Score: ";
+	display_string += to_string(white_score);
+	display_string += "    Black Score: ";
+	display_string += to_string(black_score) + "\n";
+
+	return display_string;
+}
+
+//Private Member Functions
+
+void Reversi::toggle_player() {
+	if(current_player == 'b')
+		current_player = 'w';
+	else
+		current_player = 'b';
 }
 
 vector<Position> Reversi::get_available_moves(){
@@ -311,6 +298,27 @@ vector<Position> Reversi::get_available_moves(){
 	return temp_vec;
 }
 
+vector<Position> Reversi::get_open_spaces(){
+	vector<Position> open_spaces;		//creates temp vector to hold open spaces
+	for(unsigned int i=0; i<8; i++)
+		for(unsigned int j=0; j<8; j++)
+			if(board[i][j] == 'o'){									//if the space is clear then push the integer and char of space
+				//open_spaces.push_back({i+1,j+1});
+				Position p;
+				p.row = i;
+				p.column = j;
+				open_spaces.push_back(p);
+			}
+	return open_spaces;												//return temp vector containing all open spaces
+}
+
+bool Reversi::is_move_valid(Position move){
+	for(unsigned int i=0; i<available_moves.size(); i++)
+		if(move.row == available_moves[i].row && move.column == available_moves[i].column)
+			return true;
+	return false;
+}
+
 bool Reversi::stepping_loop(int x_step, int y_step, int x, int y, char opp){
 	x+=x_step;
 	y+=y_step;
@@ -328,77 +336,47 @@ bool Reversi::stepping_loop(int x_step, int y_step, int x, int y, char opp){
 	return false;
 }
 
-bool Reversi::is_move_valid(Position move){
-	for(unsigned int i=0; i<available_moves.size(); i++)
-		if(move.row == available_moves[i].row && move.column == available_moves[i].column)
-			return true;
-	return false;
-}
-
-bool Reversi::is_game_over(){
-	vector<Position> open_spaces = get_open_spaces();
-	if(open_spaces.size() == 0)
-		return true;
+vector<Position> Reversi::get_tiles(Position start_position, int x_step, int y_step){
+	char opp;
+	if(current_player == 'w')
+		opp = 'b';
 	else
-		return false;
+		opp = 'w';
+	int x = start_position.row;
+	int y = start_position.column;
+	
+	Position current_position;
+	current_position.row = x + x_step;
+	current_position.column = y + y_step;
+
+	vector<Position> position_switches;
+	bool self_check = false;
+	while(current_position.row < 8 && current_position.column < 8 && board[current_position.row][current_position.column] != 'o' && current_position.row >= 0 && current_position.column >= 0){
+		if(board[current_position.row][current_position.column] == opp)
+			position_switches.push_back(current_position);
+		else if(board[current_position.row][current_position.column] == current_player){
+			self_check = true;
+			break;
+		}
+		current_position.row+=x_step;
+		current_position.column+=y_step;
+	}
+	if(!self_check)
+		position_switches.clear();
+	return position_switches;
 }
 
-vector<Position> Reversi::get_open_spaces(){
-	vector<Position> open_spaces;		//creates temp vector to hold open spaces
+void Reversi::update_score(){
+	int white_count(0), black_count(0);
 	for(unsigned int i=0; i<8; i++)
-		for(unsigned int j=0; j<8; j++)
-			if(board[i][j] == 'o'){									//if the space is clear then push the integer and char of space
-				//open_spaces.push_back({i+1,j+1});
-				Position p;
-				p.row = i;
-				p.column = j;
-				open_spaces.push_back(p);
-			}
-	return open_spaces;												//return temp vector containing all open spaces
-}
-
-bool Reversi::set_current_player(char player){
-	if(current_player != 'n')
-		return false;
-	else if(player == 'b' || player == 'w') {
-		current_player = player;
-		available_moves = get_available_moves();
-		return true;
-	}
-	else
-		return false;
-}
-
-char Reversi::get_letter_of_number(int number){
-	switch (number){
-		case 1:
-			return 'a';
-			break;
-		case 2:
-			return 'b';
-			break;
-		case 3:
-			return 'c';
-			break;
-		case 4:
-			return 'd';
-			break;
-		case 5:
-			return 'e';
-			break;
-		case 6:
-			return 'f';
-			break;
-		case 7:
-			return 'g';
-			break;
-		case 8:
-			return 'h';
-			break;
-		default:
-			return 'x';
-			break;
-	}
+		for(unsigned int j=0; j<8; j++){
+			if(board[i][j] == 'w')
+				white_count++;
+			else if(board[i][j] == 'b')
+				black_count++;
+		}			
+	white_score = white_count;
+	black_score = black_count;
 }
 
 int Reversi::get_number_of_letter(char c){
@@ -433,9 +411,35 @@ int Reversi::get_number_of_letter(char c){
 	}
 }
 
-void Reversi::toggle_player() {
-	if(current_player == 'b')
-		current_player = 'w';
-	else
-		current_player = 'b';
+char Reversi::get_letter_of_number(int number){
+	switch (number){
+		case 1:
+			return 'a';
+			break;
+		case 2:
+			return 'b';
+			break;
+		case 3:
+			return 'c';
+			break;
+		case 4:
+			return 'd';
+			break;
+		case 5:
+			return 'e';
+			break;
+		case 6:
+			return 'f';
+			break;
+		case 7:
+			return 'g';
+			break;
+		case 8:
+			return 'h';
+			break;
+		default:
+			return 'x';
+			break;
+	}
 }
+

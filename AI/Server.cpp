@@ -1,5 +1,6 @@
 #include "Server.h"
 #include "Reversi.h"
+#include "AI.h"
 
 #define MAX_MESSAGE 512 //max read size
 using namespace std;
@@ -81,8 +82,11 @@ void Server::start(){
 
 void Server::play_game(int sock){
 	Reversi game;
+	AI ai;
 	char user_color;
 	char ai_color;
+	char game_type; // ==r for random ==s for smart
+	string ai_move; //AI will be passed the entire board so it can play the game out as needed and return its current move.
 	socket_write(sock,"WELCOME\r\n");
 	//cout << "wrote to socket\n";
 	string s,upper_s;
@@ -150,13 +154,25 @@ void Server::play_game(int sock){
 			if(!game.is_game_over()) {
 				if(game.get_num_moves() > 0) {
 					send_string += "\n";
-					game.make_random_move();
+					if(game_type=='s'){
+						ai_move=ai.make_move(game);
+						game.make_move(ai_move);
+					}
+					else{
+						game.make_random_move();
+					}
 					send_string += game.get_previous_move() + "\n";
 					send_string += game.get_state_string();
 					
 					while(game.get_current_player() == ai_color){
 						send_string += "\n";
-						game.make_random_move();
+						if(game_type=='s'){
+							ai_move=ai.make_move(game);
+							game.make_move(ai_move);
+						}
+						else{
+							game.make_random_move();
+						}
 						send_string += game.get_previous_move() + "\n";
 						send_string += game.get_state_string();
 					}
