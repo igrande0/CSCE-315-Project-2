@@ -13,3 +13,4 @@ To test the server/game mechanics as a unit:
 * Initially enter "WHITE" or "BLACK" to choose color.
 * Enter "DISPLAY" at any time to display the game state.
 * Enter a move (e.g. "d3") to make a move. Server will make a random move after every move received from the client.
+* Enter "UNDO" at any time to revert to the last move sent.
