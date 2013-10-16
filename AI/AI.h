@@ -50,7 +50,9 @@ class AI{
 	Position max_move(vector<vector<char_value> >);
 	
 	Position min_move(vector<vector<char_value> >);
-	
+	string make_educated_move();
+	string make_greedy_move();
+	int total_in_direction(Position start_position, int x_step, int y_step)
 public:
 	//Constructor
 	AI();
