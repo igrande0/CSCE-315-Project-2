@@ -59,7 +59,7 @@ public:
 	AI();
 	
 	//Public Member Functions
-	string get_move(Reversi);
+	string get_move(Reversi, int);
 };
 
 #endif

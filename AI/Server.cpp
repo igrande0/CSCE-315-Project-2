@@ -6,6 +6,7 @@
 #define EASY 10
 #define MEDIUM 25
 #define HARD 50
+#define RANDOM 0
 using namespace std;
 
 // Private Members
@@ -128,12 +129,13 @@ void Server::play_game(int sock){
 			send_string += game.get_state_string();
 			socket_write(sock, send_string);
 		}
-		else if(upper_s	=="EASY" || upper_s=="MEDIUM" || upper_s=="HARD" || upper_s=="RANDOM_GAME")
+		else if(upper_s	=="EASY" || upper_s=="MEDIUM" || upper_s=="HARD" || upper_s=="RANDOM_GAME") {
 			if(upper_s=="EASY") game_type='e';
 			else if(upper_s=="MEDIUM") game_type=='m';
 			else if(upper_s=="HARD") game_type='h';
 			else game_type='r';
 			socket_write(sock,"OK\n");
+		}
 		else if(upper_s=="UNDO") {
 			//if(game_type=='u' || user_color=='u' || ai_color=='u'){ unknown so don't allow move...}
 			if(game.undo())
@@ -165,7 +167,7 @@ void Server::play_game(int sock){
 			else if ((sin.sin_addr.s_addr=inet_addr(host.c_str())) == INADDR_NONE){
 				error=true;
 			}
-			if(!AI_sock=socket(AF_INET, SOCK_STREAM,0)){
+			if(!(AI_sock=socket(AF_INET, SOCK_STREAM,0))){
 				error=true;
 			}
 			if(!connect(sock, (struct sockaddr *)&sin, sizeof(sin))){
@@ -173,26 +175,26 @@ void Server::play_game(int sock){
 			}
 			string s;
 			if(error){
-					sock_write(sock,"ILLEGAL\n");
-					sock_write(sock, ";Command is valid, but unable to connect with specified server\n");
+					socket_write(sock,"ILLEGAL\n");
+					socket_write(sock, ";Command is valid, but unable to connect with specified server\n");
 			}
 			else{
-				sock_write(sock,"OK\n");
-				sock_write(AI_sock,"HUMAN-AI");
-				sock_write(sock,"HUMAN-AI\n");
-				sock_write(sock,sock_read(AI_sock));
-				sock_write(AI_sock,"WHITE");
-				sock_write(sock,"WHITE\n");
-				sock_write(sock,sock_read(AI_sock));
-				sock_write(AI_sock,"HARD");
-				sock_write(sock,"HARD\n");
-				sock_write(sock,sock_read(AI_sock));
+				socket_write(sock,"OK\n");
+				socket_write(AI_sock,"HUMAN-AI");
+				socket_write(sock,"HUMAN-AI\n");
+				socket_write(sock,socket_read(AI_sock));
+				socket_write(AI_sock,"WHITE");
+				socket_write(sock,"WHITE\n");
+				socket_write(sock,socket_read(AI_sock));
+				socket_write(AI_sock,"HARD");
+				socket_write(sock,"HARD\n");
+				socket_write(sock,socket_read(AI_sock));
 				while(true){
-					move=ai.make_move(game,HARD);
+					move=ai.get_move(game,HARD);
 					game.make_move(move);
-					sock_write(AI_sock,move);
-					sock_write(sock,move);
-					opponent_move=sock_read(AI_sock);    //Note string parsing will have to be done here.
+					socket_write(AI_sock,move);
+					socket_write(sock,move);
+					opponent_move=socket_read(AI_sock);    //Note string parsing will have to be done here.
 					/*****************
 					Regex for [a-j][1-8]
 					might be multiple moves
@@ -201,7 +203,7 @@ void Server::play_game(int sock){
 					and then pop out later.
 					*****************/
 					game.make_move(opponent_move);
-					sock_write(sock,opponent_move);
+					socket_write(sock,opponent_move);
 				}
 			}
 		}
@@ -214,15 +216,15 @@ void Server::play_game(int sock){
 				if(game.get_num_moves() > 0) {
 					send_string += "\n";
 					if(game_type=='e'){
-						ai_move=ai.make_move(game,EASY);
+						ai_move=ai.get_move(game,EASY);
 						game.make_move(ai_move);
 					}
 					else if(game_type=='m'){
-						ai_move=ai.make_move(game,MEDIUM);
+						ai_move=ai.get_move(game,MEDIUM);
 						game.make_move(ai_move);
 					}
 					else if(game_type=='h'){
-						ai_move=ai.make_move(game,HARD);
+						ai_move=ai.get_move(game,HARD);
 						game.make_move(ai_move);
 					}
 					else{
@@ -234,7 +236,7 @@ void Server::play_game(int sock){
 					while(game.get_current_player() == ai_color){
 						send_string += "\n";
 						if(game_type=='s'){
-							ai_move=ai.make_move(game);
+							ai_move=ai.get_move(game, RANDOM);
 							game.make_move(ai_move);
 						}
 						else{
