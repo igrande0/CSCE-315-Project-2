@@ -1,9 +1,9 @@
 #ifndef AI_H_
 #define AI_H_
 
-#include <vector>
-
 #include "Reversi.h"
+
+#include <vector>
 
 using namespace std;
 
@@ -46,17 +46,18 @@ class AI{
 		{ -8, -24, -4, -3, -3, -4, -24, -8},
 		{ 99, -8, 8, 6, 6, 8, -8, 99}
 	};  //Table containing tile values
+
 	//Private Functions
-	int max_move(Reversi game, char player_color, int depth);
-	int min_move(Reversi game, char player_color, int depth);
+	Position max_move(Reversi game, char player_color, int depth);
+	Position min_move(Reversi game, char player_color, int depth);
 	
-	string get_minimax_move();
-	string get_educated_move();
-	string get_greedy_move();
+	string get_minimax_move(Reversi game, int depth);
+	string get_educated_move(Reversi game);
+	string get_greedy_move(Reversi game);
 	int total_in_direction(Position start_position, int x_step, int y_step);
 public:
 	//Constructor
-	AI();
+	AI() {}
 	
 	//Public Member Functions
 	string get_move(Reversi, int);

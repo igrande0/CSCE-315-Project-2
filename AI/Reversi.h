@@ -52,8 +52,6 @@ class Reversi{
 	bool stepping_loop(int x_step, int y_step, int x, int y, char opp);
 	vector<Position> get_tiles(Position start_position, int x_step, int y_step);
 	void update_score();
-	int get_number_of_letter(char c);
-	char get_letter_of_number(int number);
 	
 public:
 	Reversi();
@@ -67,10 +65,13 @@ public:
 
 	bool set_current_player(char player);
 
+	vector<Position> get_possible_moves() {return available_moves;}
 	int get_white_score() {return white_score;}
 	int get_black_score() {return black_score;}
 	int get_num_moves() {return available_moves.size();}
 	char get_current_player() {return current_player;}
+	int get_number_of_letter(char c);
+	char get_letter_of_number(int number);
 	string get_previous_move() {return previous_move;}
 	string get_state_string();	
 };

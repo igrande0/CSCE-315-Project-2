@@ -2,7 +2,7 @@ targets = Server Reversi Client
 
 all: $(targets)
 
-AI.o: AI.cpp AI.h
+AI.o: AI.cpp AI.h Reversi.h
 	g++ -g -std=gnu++0x -c AI.cpp
 
 Server.o: Server.cpp Server.h
@@ -12,7 +12,7 @@ Main.o: Main.cpp Server.h
 	g++ -g -std=gnu++0x -c Main.cpp
 
 Server: Server.o Reversi.o AI.o Main.o
-	g++ -g -std=gnu++0x -lsocket -o Server Main.o Reversi.o Server.o
+	g++ -g -std=gnu++0x -lsocket -lnsl -o Server Main.o AI.o Reversi.o Server.o
 
 Reversi.o: Reversi.cpp Reversi.h
 	g++ -g -std=gnu++0x -c Reversi.cpp
