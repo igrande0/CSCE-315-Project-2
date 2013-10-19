@@ -47,7 +47,7 @@ Position AI::min_move(Reversi game, char player_color, int depth){
 
 //Picks the best available move based on weighted tile values
 string AI::get_educated_move(Reversi game){
-	vector<Position> available_moves = game.get_possible_moves();
+	vector<Position> available_moves = game.get_available_move_positions();
 	int value = 0;
 	Position best_move;
 	for(unsigned int i=0; i < available_moves.size(); i++)
@@ -65,21 +65,16 @@ string AI::get_educated_move(Reversi game){
 //Greedy Move
 //This may eventually be unnecessary. We might instead call minimax with depth 0
 string AI::get_greedy_move(Reversi game){
-	vector<Position> available_moves = game.get_possible_moves();
-	vector<string> available_move_strings(available_moves.size());
+	vector<string> available_move_strings = game.get_available_move_strings();
 	int best_move_index;
 	int best_move_gain = 0;
+	string best_move;
 	char current_player = game.get_current_player();
 	
-	for(unsigned int i=0; i < available_moves.size(); i++){
+	for(unsigned int i=0; i < available_move_strings.size(); i++){
 		int current_move_gain;
 		Reversi game_after_move = game;
-
-		string move_string = "" + game.get_letter_of_number(available_moves[i].column + 1);
-		move_string += to_string(available_moves[i].row + 1);
-		available_move_strings[i] = move_string;
-
-		game_after_move.make_move(move_string);
+		game_after_move.make_move(available_move_strings[i]);
 
 		if(current_player == 'w')
 			current_move_gain = game_after_move.get_white_score() - game.get_white_score();
@@ -88,10 +83,10 @@ string AI::get_greedy_move(Reversi game){
 		
 		if(current_move_gain > best_move_gain){
 			best_move_gain = current_move_gain;
-			best_move_index = i;
+			best_move = available_move_strings[i];
 		}
 	}
 	
-	return available_move_strings[best_move_index];
+	return best_move;
 }
 

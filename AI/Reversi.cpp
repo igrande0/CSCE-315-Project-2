@@ -17,8 +17,8 @@ Reversi::Reversi() {
 	board[4][4] = 'w';
 	//cout << "Created Board!\n";
 	//cout << "Got Moves!\n";
-	update_score();
-	//cout << "Updated Score!\n";
+	update_state();
+	//cout << "Updated State!\n";
 }
 
 //Public functions
@@ -66,7 +66,8 @@ bool Reversi::make_move(string move){
 	if(previous_states.size() >= 20)
 		previous_states.pop_back();
 	
-	previous_states.push_front({board, available_moves, white_score, black_score, current_player});
+	previous_states.push_front({board, available_moves, available_move_strings,
+								white_score, black_score, current_player});
 	previous_move = move;
 
 	//check all directions
@@ -110,14 +111,10 @@ bool Reversi::make_move(string move){
 		all_positions.push_back(temp_positions[i]);
 	for(unsigned int i=0; i<all_positions.size(); i++)
 		board[all_positions[i].row][all_positions[i].column] = current_player;
-	update_score();
-	toggle_player();
-	available_moves = get_available_moves();
 
-	if(available_moves.size() == 0 && !(is_game_over())) {
-		toggle_player();
-		available_moves = get_available_moves();
-	}
+	toggle_player();
+	update_state();
+	return true;
 }
 
 bool Reversi::make_random_move(){
@@ -147,6 +144,7 @@ bool Reversi::undo(){
 	last_state = previous_states.front();
 	board = last_state.board;
 	available_moves = last_state.available_moves;
+	available_move_strings = last_state.available_move_strings;
 	white_score = last_state.white_score;
 	black_score = last_state.black_score;
 	current_player = last_state.current_player;
@@ -226,7 +224,6 @@ vector<Position> Reversi::get_available_moves(){
 	else if(current_player == 'b')
 		opponent = 'w';
 	vector<Position> temp_vec;
-	//needs to be finished
 	vector<Position> open_spaces = get_open_spaces();				//need to check every direction for every space
 
 	//cout << "Number of open spaces:" << open_spaces.size() << endl;
@@ -377,6 +374,24 @@ void Reversi::update_score(){
 		}			
 	white_score = white_count;
 	black_score = black_count;
+}
+
+void Reversi::update_state(){
+	update_score();
+	available_moves = get_available_moves();
+
+	if(available_moves.size() == 0 && !(is_game_over())) {
+		toggle_player();
+		available_moves = get_available_moves();
+	}
+
+	// update move strings
+	available_move_strings.clear();
+	for(unsigned int i = 0; i < available_moves.size(); ++i) {
+		string move_string = "" + get_letter_of_number(available_moves[i].column + 1);
+		move_string += to_string(available_moves[i].row + 1);
+		available_move_strings[i] = move_string;
+	}
 }
 
 int Reversi::get_number_of_letter(char c){
