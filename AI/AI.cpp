@@ -63,79 +63,35 @@ string AI::get_educated_move(Reversi game){
 
 
 //Greedy Move
-//Pretty much done - picks the available move that will give it the most points at current time
+//This may eventually be unnecessary. We might instead call minimax with depth 0
 string AI::get_greedy_move(Reversi game){
 	vector<Position> available_moves = game.get_possible_moves();
-	Position current_best_move;
-	int most_possible_tiles = 0;
-	for(unsigned int i=0; i<available_moves.size(); i++){
-		int tiles_for_this_move = 0;
-		int x_step = 0;
-		int y_step = -1;
-		tiles_for_this_move += total_in_direction(available_moves[i], x_step, y_step);		//check above
+	vector<string> available_move_strings(available_moves.size());
+	int best_move_index;
+	int best_move_gain = 0;
+	char current_player = game.get_current_player();
+	
+	for(unsigned int i=0; i < available_moves.size(); i++){
+		int current_move_gain;
+		Reversi game_after_move = game;
 
-		y_step = 1;
-		tiles_for_this_move += total_in_direction(available_moves[i], x_step, y_step);		//check below
+		string move_string = "" + game.get_letter_of_number(available_moves[i].column + 1);
+		move_string += to_string(available_moves[i].row + 1);
+		available_move_strings[i] = move_string;
 
-		y_step = 0;
-		x_step = 1;
-		tiles_for_this_move += total_in_direction(available_moves[i], x_step, y_step);		//check right
+		game_after_move.make_move(move_string);
 
-		x_step = -1;
-		tiles_for_this_move += total_in_direction(available_moves[i], x_step, y_step);		//check left
-
-		y_step = -1;
-		tiles_for_this_move += total_in_direction(available_moves[i], x_step, y_step);		//check top left
-
-		x_step = 1;
-		tiles_for_this_move += total_in_direction(available_moves[i], x_step, y_step);		//check top right
-
-		y_step = 1;
-		tiles_for_this_move += total_in_direction(available_moves[i], x_step, y_step);		//check bottom right
-
-		x_step = -1;
-		tiles_for_this_move += total_in_direction(available_moves[i], x_step, y_step);		//check bottom left
-
-		if(tiles_for_this_move > most_possible_tiles){
-			most_possible_tiles = tiles_for_this_move;
-			current_best_move.row = available_moves[i].row;
-			current_best_move.column = available_moves[i].column;
+		if(current_player == 'w')
+			current_move_gain = game_after_move.get_white_score() - game.get_white_score();
+		else
+			current_move_gain = game_after_move.get_black_score() - game.get_black_score();
+		
+		if(current_move_gain > best_move_gain){
+			best_move_gain = current_move_gain;
+			best_move_index = i;
 		}
 	}
-	string move_string = "" + game.get_letter_of_number(current_best_move.column + 1);
-	move_string += to_string(current_best_move.row + 1);
 	
-	return move_string;
-}
-
-int AI::total_in_direction(Position start_position, int x_step, int y_step){
-	// for now, this can't work with the current design of the Reversi class
-	/*char opp;
-	if(game.get_current_player() == 'w')
-		opp = 'b';
-	else
-		opp = 'w';
-	int x = start_position.row;
-	int y = start_position.column;
-	
-	Position current_position;
-	current_position.row = x + x_step;
-	current_position.column = y + y_step;
-	
-	int total_number_of_tiles = 0;
-	bool self_check = false;
-	while(current_position.row < 8 && current_position.column < 8  && current_position.row >= 0 && current_position.column >= 0 && board[current_position.row][current_position.column] != 'o'){
-		if(board[current_position.row][current_position.column] == opp)
-			total_number_of_tiles++;
-		else if(board[current_position.row][current_position.column] == game.current_player()){
-			self_check = true;
-			break;
-		}
-		current_position.row+=x_step;
-		current_position.column+=y_step;
-	}
-	if(!self_check)
-		total_number_of_tiles = 0;
-	return total_number_of_tiles;*/
+	return available_move_strings[best_move_index];
 }
 

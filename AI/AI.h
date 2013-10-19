@@ -54,7 +54,6 @@ class AI{
 	string get_minimax_move(Reversi game, int depth);
 	string get_educated_move(Reversi game);
 	string get_greedy_move(Reversi game);
-	int total_in_direction(Position start_position, int x_step, int y_step);
 public:
 	//Constructor
 	AI() {}
