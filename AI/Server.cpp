@@ -3,10 +3,6 @@
 #include "AI.h"
 
 #define MAX_MESSAGE 512 //max read size
-#define EASY 10
-#define MEDIUM 25
-#define HARD 50
-#define RANDOM 0
 using namespace std;
 
 // Private Members
@@ -190,7 +186,7 @@ void Server::play_game(int sock){
 				socket_write(sock,"HARD\n");
 				socket_write(sock,socket_read(AI_sock));
 				while(true){
-					move=ai.get_move(game,HARD);
+					move=ai.get_move(game,AI::HARD);
 					game.make_move(move);
 					socket_write(AI_sock,move);
 					socket_write(sock,move);
@@ -216,15 +212,15 @@ void Server::play_game(int sock){
 				if(game.get_num_moves() > 0) {
 					send_string += "\n";
 					if(game_type=='e'){
-						ai_move=ai.get_move(game,EASY);
+						ai_move=ai.get_move(game,AI::EASY);
 						game.make_move(ai_move);
 					}
 					else if(game_type=='m'){
-						ai_move=ai.get_move(game,MEDIUM);
+						ai_move=ai.get_move(game,AI::MEDIUM);
 						game.make_move(ai_move);
 					}
 					else if(game_type=='h'){
-						ai_move=ai.get_move(game,HARD);
+						ai_move=ai.get_move(game,AI::HARD);
 						game.make_move(ai_move);
 					}
 					else{
@@ -236,7 +232,7 @@ void Server::play_game(int sock){
 					while(game.get_current_player() == ai_color){
 						send_string += "\n";
 						if(game_type=='s'){
-							ai_move=ai.get_move(game, RANDOM);
+							ai_move=ai.get_move(game, AI::RANDOM);
 							game.make_move(ai_move);
 						}
 						else{
