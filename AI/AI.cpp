@@ -192,12 +192,14 @@ double AI::corners(Reversi game) {
 	int min_unlikely = 0;
 	vector<Position> open_space_max = game.get_open_spaces();
 	vector<Position> available_moves_max = game.get_available_move_positions();
+	// potential corners
 	for(int i = 0; i < available_moves_max.size(); i++ ){
 		if(available_moves_max[i].row == (0 || 7) ){
 			if(available_moves_max[i].column == (0 || 7))
 				max_potential++;
 		}
 	}
+	// unlikely corners
 	int max_open = 0;
 	for(int k = 0; i < open_space_max.size(); k++ ){
 		if(open_space_max[k].row == (0 || 7) ){
@@ -207,19 +209,20 @@ double AI::corners(Reversi game) {
 	}
 	max_unlikely = max_open - max_potential;
 
-	
+	//opponent 
 	Reversi new_game = game;
 	new_game.toggle_player();
 	new_game.update_state();
 	vector<Position> open_space_min = game.get_open_spaces();
 	vector<Position> available_moves_min = new_game.get_available_move_positions();
+	// potential corners
 	for(int i = 0; i < available_moves_min.size(); i++ ){
 		if(available_moves_min[i].row == (0 || 7) ){
 			if(available_moves_min[i].column == (0 || 7))
 				min_potential++;
 		}
 	}
-	
+	// unlikely corners
 	int min_open = 0;
 	for(int k = 0; i < open_space_min.size(); k++ ){
 		if(open_space_min[k].row == (0 || 7) ){
@@ -228,10 +231,11 @@ double AI::corners(Reversi game) {
 		}
 	}
 	min_unlikely = min_open - min_potential; 
+	
+	
+	
 	// corners captured
-	// potential corners
-	// unlikely corners
-
+	
 	// max_player_corner = max_captured*weight + max_potential*weight + max_unlikely*weight
 	// min_player_corner = min_captured*weight + min_potential*weight + min_unlikely*weight
 
