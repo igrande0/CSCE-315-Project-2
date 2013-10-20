@@ -190,19 +190,28 @@ double AI::corners(Reversi game) {
 	int min_potential = 0;
 	int max_unlikely = 0;
 	int min_unlikely = 0;
+	vector<Position> open_space_max = game.get_open_spaces();
 	vector<Position> available_moves_max = game.get_available_move_positions();
-	Reversi new_game = game;
 	for(int i = 0; i < available_moves_max.size(); i++ ){
 		if(available_moves_max[i].row == (0 || 7) ){
 			if(available_moves_max[i].column == (0 || 7))
 				max_potential++;
 		}
 	}
+	int max_open = 0;
+	for(int k = 0; i < open_space_max.size(); k++ ){
+		if(open_space_max[k].row == (0 || 7) ){
+			if(open_space_max[k].column == (0 || 7))
+				max_open++;
+		}
+	}
+	max_unlikely = max_open - max_potential;
+
 	
-	max_unlikely = 4 - max_potential - max_captured;
-	
+	Reversi new_game = game;
 	new_game.toggle_player();
 	new_game.update_state();
+	vector<Position> open_space_min = game.get_open_spaces();
 	vector<Position> available_moves_min = new_game.get_available_move_positions();
 	for(int i = 0; i < available_moves_min.size(); i++ ){
 		if(available_moves_min[i].row == (0 || 7) ){
@@ -211,7 +220,14 @@ double AI::corners(Reversi game) {
 		}
 	}
 	
-	min_unllikely = 4 - min_potential - min_captured; 
+	int min_open = 0;
+	for(int k = 0; i < open_space_min.size(); k++ ){
+		if(open_space_min[k].row == (0 || 7) ){
+			if(open_space_min[k].column == (0 || 7))
+				min_open++;
+		}
+	}
+	min_unlikely = min_open - min_potential; 
 	// corners captured
 	// potential corners
 	// unlikely corners
@@ -233,6 +249,7 @@ double AI::corners(Reversi game) {
 double AI::stability(Reversi game) {
 	int max_player_stability = 0;
 	int min_player_stability = 0;
+	
 
 	// STABILITY CODE
 
