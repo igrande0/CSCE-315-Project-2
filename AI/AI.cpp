@@ -52,7 +52,7 @@ AI::NegaReturn AI::nega_max(Reversi game, int depth, double alpha, double beta, 
 		
 		// consider whether next player is opponent or current player
 		if(new_game.get_current_player() != game.get_current_player())
-			current_value = -(nega_max(new_game, depth-1, -alpha, -beta, -color)).value;
+			current_value = -(nega_max(new_game, depth-1, -beta, -alpha, -color)).value;
 		else
 			current_value = (nega_max(new_game, depth-1, alpha, beta, color)).value;
 
