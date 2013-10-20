@@ -146,6 +146,8 @@ void Server::play_game(int sock){
 			bool error=false;
 			int AI_sock;
 			string move, opponent_move;
+			string opponent_move_partial;
+			size_t found_index;
 			upper_s = upper_s.substr(6); //This will remove "AI-AI "
 			string server = get_word(upper_s);
 			int port = atoi(get_word(upper_s).c_str());
@@ -191,14 +193,19 @@ void Server::play_game(int sock){
 					socket_write(AI_sock,move);
 					socket_write(sock,move);
 					opponent_move=socket_read(AI_sock);    //Note string parsing will have to be done here.
-					/*****************
-					Regex for [a-j][1-8]
-					might be multiple moves
-					in opponent_move so push all
-					the regex matches into vector
-					and then pop out later.
-					*****************/
-					game.make_move(opponent_move);
+					found_index = opponent_move.find_first_of("abcdefghABCDEFGH"); //Regex not implemented in gcc4.7 so find move letter
+					while (found_index != string::npos){ //Check if following or previous char is move integer
+						if(opponent_move[found_index+1]=='1' || opponent_move[found_index+1]=='2' || opponent_move[found_index+1]=='3' || opponent_move[found_index+1]=='4' || opponent_move[found_index+1]=='5' || opponent_move[found_index+1]=='6' || opponent_move[found_index+1]=='7' || opponent_move[found_index+1]=='8'){
+							opponent_move_partial=opponent_move[found_index];
+							opponent_move_partial+=opponent_move[found_index+1];
+						}
+						else if(opponent_move[found_index-1]=='1' || opponent_move[found_index-1]=='2' || opponent_move[found_index-1]=='3' || opponent_move[found_index-1]=='4' || opponent_move[found_index-1]=='5' || opponent_move[found_index-1]=='6' || opponent_move[found_index-1]=='7' || opponent_move[found_index-1]=='8'){
+							opponent_move_partial=opponent_move[found_index-1];
+							opponent_move_partial+=opponent_move[found_index];
+						}
+						game.make_move(opponent_move_partial);	//make move
+						found_index = opponent_move.find_first_of("abcdefghABCDEFGH",found_index+1);
+					}
 					socket_write(sock,opponent_move);
 				}
 			}
@@ -231,8 +238,16 @@ void Server::play_game(int sock){
 					
 					while(game.get_current_player() == ai_color){
 						send_string += "\n";
-						if(game_type=='s'){
-							ai_move=ai.get_move(game, AI::RANDOM);
+						if(game_type=='e'){
+							ai_move=ai.get_move(game,AI::EASY);
+							game.make_move(ai_move);
+						}
+						else if(game_type=='m'){
+							ai_move=ai.get_move(game,AI::MEDIUM);
+							game.make_move(ai_move);
+						}
+						else if(game_type=='h'){
+							ai_move=ai.get_move(game,AI::HARD);
 							game.make_move(ai_move);
 						}
 						else{
