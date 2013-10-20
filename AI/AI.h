@@ -27,24 +27,22 @@ http://en.wikipedia.org/wiki/Minimax */
 
 class AI{
 public:
-	//Public Enums
+	// Public Enums
 	enum Difficulty {
 		EASY, MEDIUM, HARD, RANDOM
 	};
 
-	//Constructor
+	// Constructor
 	AI() {}
 	
-	//Public Member Functions
+	// Public Member Function
 	string get_move(Reversi game, Difficulty d);
 private:
-	//Private Structures
+	// Private Data Members
 	struct NegaReturn{
 		string move;
-		int value;
+		double value;
 	};
-
-	//Private Data Members
 	Reversi inital_game;
 	int value_table[8][8]=
 	{
@@ -58,13 +56,17 @@ private:
 		{ 99, -8, 8, 6, 6, 8, -8, 99}
 	};  //Table containing tile values
 
-	//Private Functions
-	NegaReturn nega_max(Reversi game, int depth, int alpha, int beta, int color);
-	int evaluate(Reversi game);
-
-	string get_minimax_move(Reversi game, int depth);
+	// AI algorithms
+	NegaReturn nega_max(Reversi game, int depth, double alpha, double beta, double color);
 	string get_educated_move(Reversi game);
 	string get_greedy_move(Reversi game);
+	
+	// Heuristic Functions
+	double evaluate(Reversi game);
+	double parity(Reversi game);
+	double mobility(Reversi game);
+	double corners(Reversi game);
+	double stability(Reversi game);
 };
 
 #endif

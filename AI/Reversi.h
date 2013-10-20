@@ -33,6 +33,8 @@ public:
 	void clear_board();
 
 	bool set_current_player(char player);
+	void toggle_player();
+	void update_state();
 
 	vector<Position> get_available_move_positions() {return available_moves;}
 	vector<string> get_available_move_strings() {return available_move_strings;}
@@ -69,9 +71,6 @@ private:
 	vector<string> available_move_strings;
 		
 	// PRIVATE UTILITY FUNCTIONS
-	void toggle_player();
-
-	void update_state();
 	void update_score();
 	vector<Position> get_available_moves();
 	vector<Position> get_open_spaces();
