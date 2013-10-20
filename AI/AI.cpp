@@ -174,7 +174,7 @@ double AI::mobility(Reversi game) {
 /* Returns a value that is weighted by corners captured, potential corners, and unlikely corners
  * for now, don't know weights (the reference does not list any weight values)
  * a guess:
- *   captured = HIGHEST NUMBER; potential = LOWER THAN CAPTURED; unlikely = NEGATIVE
+ *   captured = HIGHEST NUMBER; potential = LOWER THAN CAPTURED; unlikely = 0?
  * 
  * corners captured: self-explanatory
  * potential corners: a corner that could be caught in the next move
