@@ -13,7 +13,6 @@
 #define POTENTIAL_CORNER_WEIGHT 33
 #define UNLIKELY_CORNER_WEIGHT 1
 
-
 /*------------------------------------------------------------------------------------*/
 /* PUBLIC FUNCTION */
 /*------------------------------------------------------------------------------------*/
@@ -182,7 +181,10 @@ double AI::mobility(Reversi game) {
 	// calculated by counting the number of empty spaces next to at least one of the opponent's tile
 	// the potential mobility and actual mobility will have to somehow be weighted
 
-	return 100*(max_player_mobility - min_player_mobility)/(max_player_mobility + min_player_mobility);
+	if(max_player_mobility + min_player_mobility == 0)
+		return 0;
+	else
+		return 100*(max_player_mobility - min_player_mobility)/(max_player_mobility + min_player_mobility);
 }
 
 /* Returns a value that is weighted by corners captured, potential corners, and unlikely corners
@@ -289,20 +291,102 @@ double AI::corners(Reversi game) {
 double AI::stability(Reversi game) {
 	int max_player_stability = 0;
 	int min_player_stability = 0;
+	int max_player_unstable;
+	int min_player_unstable;
 	Reversi new_game = game;
 	new_game.toggle_player();
 	new_game.update_state();
 	
-	vector<vector<char>> max_board = game.get_board();
-	char max_player = game.get_current_player();
+	vector<Position> max_unstable = get_unstable_tiles(game);
+	vector<Position> min_unstable = get_unstable_tiles(new_game);
 
-	vector<vector<char>> min_board = new_game.get_board();
-	char min_player = new_game.get_current_player();
+	max_player_unstable = max_unstable.size();
+	min_player_unstable = min_unstable.size();
 
-	// STABILITY CODE
+	// NEED TO FINISH - UNSTABLE TILE CALCULATION
 
 	if(max_player_stability + min_player_stability == 0)
 		return 0;
 	else
 		return 100*(max_player_stability - min_player_stability)/(max_player_stability + min_player_stability);
+}
+
+bool sort_positions(const Position& left, const Position& right) {
+	return (left.row*10 + left.column) < (right.row*10 + right.column);
+}
+
+bool equal_positions(const Position& left, const Position& right) {
+	return left.row == right.row && left.column == right.column;
+}
+
+vector<Position> AI::get_unstable_tiles(Reversi game) {
+	vector<Position> available_moves = game.get_available_move_positions();
+	vector<Position> unstable_tiles;
+
+	for(unsigned int i = 0; i < available_moves.size(); ++i) {
+		vector<Position> temp_positions;
+
+		temp_positions = get_move_tiles(available_moves[i], 0, -1, game);		//check above
+		unstable_tiles.insert(unstable_tiles.end(), temp_positions.begin(), temp_positions.end());
+
+		temp_positions = get_move_tiles(available_moves[i], 0, 1, game);		//check below
+		unstable_tiles.insert(unstable_tiles.end(), temp_positions.begin(), temp_positions.end());
+
+		temp_positions = get_move_tiles(available_moves[i], 1, 0, game);		//check right
+		unstable_tiles.insert(unstable_tiles.end(), temp_positions.begin(), temp_positions.end());
+
+		temp_positions = get_move_tiles(available_moves[i], -1, 0, game);		//check left
+		unstable_tiles.insert(unstable_tiles.end(), temp_positions.begin(), temp_positions.end());
+
+		temp_positions = get_move_tiles(available_moves[i], -1, -1, game);		//check top left
+		unstable_tiles.insert(unstable_tiles.end(), temp_positions.begin(), temp_positions.end());
+
+		temp_positions = get_move_tiles(available_moves[i], 1, -1, game);		//check top right
+		unstable_tiles.insert(unstable_tiles.end(), temp_positions.begin(), temp_positions.end());
+
+		temp_positions = get_move_tiles(available_moves[i], 1, 1, game);		//check bottom right
+		unstable_tiles.insert(unstable_tiles.end(), temp_positions.begin(), temp_positions.end());
+
+		temp_positions = get_move_tiles(available_moves[i], -1, 1, game);		//check bottom left
+		unstable_tiles.insert(unstable_tiles.end(), temp_positions.begin(), temp_positions.end());
+	}
+
+	// REMOVE DUPLICATES
+	sort(unstable_tiles.begin(), unstable_tiles.end(), sort_positions);
+	auto last = unique(unstable_tiles.begin(), unstable_tiles.end(), equal_positions);
+	unstable_tiles.erase(last, unstable_tiles.end());
+
+	return unstable_tiles;
+}
+
+vector<Position> AI::get_move_tiles(Position start, int x_step, int y_step, Reversi game) {
+	char current_player = game.get_current_player();
+	char opp;
+	vector<vector<char>> board = game.get_board();
+	if(current_player == 'w')
+		opp = 'b';
+	else
+		opp = 'w';
+	int x = start.row;
+	int y = start.column;
+	
+	Position current_position;
+	current_position.row = x + x_step;
+	current_position.column = y + y_step;
+
+	vector<Position> position_switches;
+	bool self_check = false;
+	while(current_position.row < 8 && current_position.column < 8 && board[current_position.row][current_position.column] != 'o' && current_position.row >= 0 && current_position.column >= 0){
+		if(board[current_position.row][current_position.column] == opp)
+			position_switches.push_back(current_position);
+		else if(board[current_position.row][current_position.column] == current_player){
+			self_check = true;
+			break;
+		}
+		current_position.row+=x_step;
+		current_position.column+=y_step;
+	}
+	if(!self_check)
+		position_switches.clear();
+	return position_switches;
 }

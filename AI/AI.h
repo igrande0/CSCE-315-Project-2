@@ -4,6 +4,7 @@
 #include "Reversi.h"
 
 #include <vector>
+#include <set>
 
 using namespace std;
 
@@ -67,6 +68,9 @@ private:
 	double mobility(Reversi game);
 	double corners(Reversi game);
 	double stability(Reversi game);
+
+	vector<Position> get_unstable_tiles(Reversi game);
+	vector<Position> get_move_tiles(Position start, int x_step, int y_step, Reversi game);
 };
 
 #endif
