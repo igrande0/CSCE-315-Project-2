@@ -17,7 +17,7 @@ Reversi::Reversi() {
 	board[4][4] = 'w';
 	//cout << "Created Board!\n";
 	//cout << "Got Moves!\n";
-	update_state();
+	update_score();
 	//cout << "Updated State!\n";
 }
 
@@ -378,21 +378,23 @@ void Reversi::update_score(){
 
 void Reversi::update_state(){
 	update_score();
-	available_moves = get_available_moves();
-
-	if(available_moves.size() == 0 && !(is_game_over())) {
-		toggle_player();
+	if(current_player != 'n') {
 		available_moves = get_available_moves();
-	}
 
-	// update move strings
-	available_move_strings.clear();
-	for(unsigned int i = 0; i < available_moves.size(); ++i) {
-		string move_string;
-		move_string+=get_letter_of_number(available_moves[i].column + 1);
-		move_string += to_string(available_moves[i].row + 1);
-		//cout << "move_string: " << move_string << " column: " << get_letter_of_number(available_moves[i].column + 1) << " \trow: " << available_moves[i].row +1 << '\n';
-		available_move_strings.push_back(move_string); //was avaliable_move_strings[i] segfaulted.
+		if(available_moves.size() == 0 && !(is_game_over())) {
+			toggle_player();
+			available_moves = get_available_moves();
+		}
+
+		// update move strings
+		available_move_strings.clear();
+		for(unsigned int i = 0; i < available_moves.size(); ++i) {
+			string move_string;
+			move_string+=get_letter_of_number(available_moves[i].column + 1);
+			move_string += to_string(available_moves[i].row + 1);
+			//cout << "move_string: " << move_string << " column: " << get_letter_of_number(available_moves[i].column + 1) << " \trow: " << available_moves[i].row +1 << '\n';
+			available_move_strings.push_back(move_string); //was avaliable_move_strings[i] segfaulted.
+		}
 	}
 }
 

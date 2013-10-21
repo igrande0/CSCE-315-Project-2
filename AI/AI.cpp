@@ -193,7 +193,6 @@ double AI::mobility(Reversi game) {
  * corners captured: self-explanatory
  * potential corners: a corner that could be caught in the next move
  * unlikely corners: corners that cannot be captured in the near future
-  ***********************************INCOMPLETE********************************************
  */
 double AI::corners(Reversi game) {
 	int max_player_corner = 0;
@@ -290,7 +289,15 @@ double AI::corners(Reversi game) {
 double AI::stability(Reversi game) {
 	int max_player_stability = 0;
 	int min_player_stability = 0;
+	Reversi new_game = game;
+	new_game.toggle_player();
+	new_game.update_state();
 	
+	vector<vector<char>> max_board = game.get_board();
+	char max_player = game.get_current_player();
+
+	vector<vector<char>> min_board = new_game.get_board();
+	char min_player = new_game.get_current_player();
 
 	// STABILITY CODE
 
