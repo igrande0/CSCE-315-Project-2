@@ -39,7 +39,7 @@ string AI::get_move(Reversi game, Difficulty d){
 AI::NegaReturn AI::nega_max(Reversi game, int depth, double alpha, double beta, double color) {
 	// reached end of tree; return heuristic value of node
 	if(depth == 0 || game.is_game_over())
-		return {"", evaluate(game)};
+		return {"", color*evaluate(game)};
 
 	double best_value = DBL_MIN;
 	string best_move;
