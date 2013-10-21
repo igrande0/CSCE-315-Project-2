@@ -33,7 +33,7 @@ public:
 	};
 
 	// Constructor
-	AI() {}
+	AI() { }
 	
 	// Public Member Function
 	string get_move(Reversi game, Difficulty d);

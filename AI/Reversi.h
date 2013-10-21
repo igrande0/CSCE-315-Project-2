@@ -46,6 +46,7 @@ public:
 	char get_letter_of_number(int number);
 	string get_previous_move() {return previous_move;}
 	string get_state_string();	
+	vector<Position> get_open_spaces();
 
 private:
 	// STATE VARIABLES
@@ -73,7 +74,6 @@ private:
 	// PRIVATE UTILITY FUNCTIONS
 	void update_score();
 	vector<Position> get_available_moves();
-	vector<Position> get_open_spaces();
 	bool is_move_valid(Position move);
 
 	bool stepping_loop(int x_step, int y_step, int x, int y, char opp);

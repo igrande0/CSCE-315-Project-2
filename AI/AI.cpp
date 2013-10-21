@@ -3,6 +3,16 @@
 
 #include <cfloat>
 #include <algorithm>
+#include <iostream>
+
+/*------------------------------------------------------------------------------------*/
+/* DEFINES -- Most Heiuristic Values */
+/*------------------------------------------------------------------------------------*/
+
+#define CAPTURED_CORNER_WEIGHT 99
+#define POTENTIAL_CORNER_WEIGHT 33
+#define UNLIKELY_CORNER_WEIGHT 1
+
 
 /*------------------------------------------------------------------------------------*/
 /* PUBLIC FUNCTION */
@@ -82,7 +92,8 @@ string AI::get_educated_move(Reversi game){
 			best_move.row = available_moves[i].row;
 			best_move.column = available_moves[i].column;
 		}
-	string move = "" + game.get_letter_of_number(best_move.column + 1);
+	string move;
+	move += game.get_letter_of_number(best_move.column + 1);
 	move += to_string(best_move.row + 1);
 	return move;
 }
@@ -90,13 +101,16 @@ string AI::get_educated_move(Reversi game){
 
 string AI::get_greedy_move(Reversi game){
 	vector<string> available_move_strings = game.get_available_move_strings();
+	/*for(int i=0; i<available_move_strings.size(); i++){
+		std::cout << available_move_strings[i] << '\n';
+	}*/
 	int best_move_index;
 	int best_move_gain = 0;
+	int current_move_gain;
 	string best_move;
 	char current_player = game.get_current_player();
 	
 	for(unsigned int i=0; i < available_move_strings.size(); i++){
-		int current_move_gain;
 		Reversi game_after_move = game;
 		game_after_move.make_move(available_move_strings[i]);
 
@@ -104,7 +118,7 @@ string AI::get_greedy_move(Reversi game){
 			current_move_gain = game_after_move.get_white_score() - game.get_white_score();
 		else
 			current_move_gain = game_after_move.get_black_score() - game.get_black_score();
-		
+		//std::cout << "Current move: " << available_move_strings[i] << " Gain: " << current_move_gain << '\n';
 		if(current_move_gain > best_move_gain){
 			best_move_gain = current_move_gain;
 			best_move = available_move_strings[i];
@@ -201,7 +215,7 @@ double AI::corners(Reversi game) {
 	}
 	// unlikely corners
 	int max_open = 0;
-	for(int k = 0; i < open_space_max.size(); k++ ){
+	for(int k = 0; k < open_space_max.size(); k++ ){
 		if(open_space_max[k].row == (0 || 7) ){
 			if(open_space_max[k].column == (0 || 7))
 				max_open++;
@@ -224,7 +238,7 @@ double AI::corners(Reversi game) {
 	}
 	// unlikely corners
 	int min_open = 0;
-	for(int k = 0; i < open_space_min.size(); k++ ){
+	for(int k = 0; k < open_space_min.size(); k++ ){
 		if(open_space_min[k].row == (0 || 7) ){
 			if(open_space_min[k].column == (0 || 7))
 				min_open++;
@@ -235,9 +249,10 @@ double AI::corners(Reversi game) {
 	
 	
 	// corners captured
-	
-	// max_player_corner = max_captured*weight + max_potential*weight + max_unlikely*weight
-	// min_player_corner = min_captured*weight + min_potential*weight + min_unlikely*weight
+	cout << "max_captured= " << max_captured << " max_potential= " << max_potential << " max_unlikely= " << max_unlikely << '\n';
+	cout << "min_captured= " << min_captured << " min_potential= " << min_potential << " min_unlikely= " << min_unlikely << '\n';
+	max_player_corner = max_captured*CAPTURED_CORNER_WEIGHT + max_potential*POTENTIAL_CORNER_WEIGHT + max_unlikely*UNLIKELY_CORNER_WEIGHT;
+	min_player_corner = min_captured*CAPTURED_CORNER_WEIGHT + min_potential*POTENTIAL_CORNER_WEIGHT + min_unlikely*UNLIKELY_CORNER_WEIGHT;
 
 	return 100*(max_player_corner - min_player_corner)/(max_player_corner + min_player_corner);
 }

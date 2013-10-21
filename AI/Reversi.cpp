@@ -388,9 +388,11 @@ void Reversi::update_state(){
 	// update move strings
 	available_move_strings.clear();
 	for(unsigned int i = 0; i < available_moves.size(); ++i) {
-		string move_string = "" + get_letter_of_number(available_moves[i].column + 1);
+		string move_string;
+		move_string+=get_letter_of_number(available_moves[i].column + 1);
 		move_string += to_string(available_moves[i].row + 1);
-		available_move_strings[i] = move_string;
+		//cout << "move_string: " << move_string << " column: " << get_letter_of_number(available_moves[i].column + 1) << " \trow: " << available_moves[i].row +1 << '\n';
+		available_move_strings.push_back(move_string); //was avaliable_move_strings[i] segfaulted.
 	}
 }
 
