@@ -297,13 +297,15 @@ double AI::stability(Reversi game) {
 	new_game.toggle_player();
 	new_game.update_state();
 	
-	vector<Position> max_unstable = get_unstable_tiles(game);
-	vector<Position> min_unstable = get_unstable_tiles(new_game);
+	vector<Position> min_unstable = get_unstable_tiles(game);
+	vector<Position> max_unstable = get_unstable_tiles(new_game);
 
 	max_player_unstable = max_unstable.size();
 	min_player_unstable = min_unstable.size();
 
-	// NEED TO FINISH - UNSTABLE TILE CALCULATION
+	// *******************NEED TO FINISH - STABLE TILE CALCULATION*******************
+	// semi-stable tiles are tiles that are neither stable nor unstable
+	// therefore, we do not need to explicitly search for semi-stable tiles
 
 	if(max_player_stability + min_player_stability == 0)
 		return 0;
