@@ -246,15 +246,37 @@ double AI::corners(Reversi game) {
 	}
 	min_unlikely = min_open - min_potential; 
 	
-	
-	
-	// corners captured
+	vector<vector<char>> board = game.get_board();
+	char max_player = game.get_current_player();
+	char min_player = new_game.get_current_player();
+
+	if(board[0][0] == max_player)
+		max_captured++;
+	if(board[0][7] == max_player)
+		max_captured++;
+	if(board[7][0] == max_player)
+		max_captured++;
+	if(board[7][7] == max_player)
+		max_captured++;
+
+	if(board[0][0] == min_player)
+		min_captured++;
+	if(board[0][7] == min_player)
+		min_captured++;
+	if(board[7][0] == min_player)
+		min_captured++;
+	if(board[7][7] == min_player)
+		min_captured++;
+
 	cout << "max_captured= " << max_captured << " max_potential= " << max_potential << " max_unlikely= " << max_unlikely << '\n';
 	cout << "min_captured= " << min_captured << " min_potential= " << min_potential << " min_unlikely= " << min_unlikely << '\n';
 	max_player_corner = max_captured*CAPTURED_CORNER_WEIGHT + max_potential*POTENTIAL_CORNER_WEIGHT + max_unlikely*UNLIKELY_CORNER_WEIGHT;
 	min_player_corner = min_captured*CAPTURED_CORNER_WEIGHT + min_potential*POTENTIAL_CORNER_WEIGHT + min_unlikely*UNLIKELY_CORNER_WEIGHT;
 
-	return 100*(max_player_corner - min_player_corner)/(max_player_corner + min_player_corner);
+	if(max_player_corner + min_player_corner == 0)
+		return 0;
+	else
+		return 100*(max_player_corner - min_player_corner)/(max_player_corner + min_player_corner);
 }
 
 /* Returns the overall stability of a current state.
@@ -272,5 +294,8 @@ double AI::stability(Reversi game) {
 
 	// STABILITY CODE
 
-	return 100*(max_player_stability - min_player_stability)/(max_player_stability + min_player_stability);
+	if(max_player_stability + min_player_stability == 0)
+		return 0;
+	else
+		return 100*(max_player_stability - min_player_stability)/(max_player_stability + min_player_stability);
 }

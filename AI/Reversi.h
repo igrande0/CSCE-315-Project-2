@@ -38,6 +38,7 @@ public:
 
 	vector<Position> get_available_move_positions() {return available_moves;}
 	vector<string> get_available_move_strings() {return available_move_strings;}
+	vector<vector<char>> get_board() {return board;};
 	int get_white_score() {return white_score;}
 	int get_black_score() {return black_score;}
 	int get_num_moves() {return available_moves.size();}
