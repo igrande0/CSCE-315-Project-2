@@ -11,6 +11,7 @@ int main(){
 	AI ai;
 	cout << "Initialized AI\n";
 	Reversi game;
+	game.set_current_player('w');
 	cout << "Easy move string: " << ai.get_move(game, AI::EASY) << "\nMedium move string: " << ai.get_move(game, AI::MEDIUM) << "\nHard move string: " << ai.get_move(game, AI::HARD) << '\n';
 	cout << "Beginning game play!\n";
 	while(!game.is_game_over()) {

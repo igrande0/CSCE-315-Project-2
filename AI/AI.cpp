@@ -269,8 +269,8 @@ double AI::corners(Reversi game) {
 	if(board[7][7] == min_player)
 		min_captured++;
 
-	cout << "max_captured= " << max_captured << " max_potential= " << max_potential << " max_unlikely= " << max_unlikely << '\n';
-	cout << "min_captured= " << min_captured << " min_potential= " << min_potential << " min_unlikely= " << min_unlikely << '\n';
+	//cout << "max_captured= " << max_captured << " max_potential= " << max_potential << " max_unlikely= " << max_unlikely << '\n';
+	//cout << "min_captured= " << min_captured << " min_potential= " << min_potential << " min_unlikely= " << min_unlikely << '\n';
 	max_player_corner = max_captured*CAPTURED_CORNER_WEIGHT + max_potential*POTENTIAL_CORNER_WEIGHT + max_unlikely*UNLIKELY_CORNER_WEIGHT;
 	min_player_corner = min_captured*CAPTURED_CORNER_WEIGHT + min_potential*POTENTIAL_CORNER_WEIGHT + min_unlikely*UNLIKELY_CORNER_WEIGHT;
 
