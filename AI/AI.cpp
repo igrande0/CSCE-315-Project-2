@@ -28,7 +28,7 @@ string AI::get_move(Reversi game, Difficulty d){
 		move = get_educated_move(game);
 		break;
 	case HARD:
-		move = nega_max(game, 5, DBL_MIN, DBL_MAX, 1).move;
+		move = nega_max(game, 3, -DBL_MAX, DBL_MAX, 1).move;
 		break;
 	case RANDOM:
 		break;
@@ -50,7 +50,8 @@ AI::NegaReturn AI::nega_max(Reversi game, int depth, double alpha, double beta, 
 	if(depth == 0 || game.is_game_over())
 		return {"", color*evaluate(game)};
 
-	double best_value = DBL_MIN;
+	double best_value = -DBL_MAX;
+
 	string best_move;
 	vector<string> available_moves = game.get_available_move_strings();
 
@@ -65,16 +66,27 @@ AI::NegaReturn AI::nega_max(Reversi game, int depth, double alpha, double beta, 
 		else
 			current_value = (nega_max(new_game, depth-1, alpha, beta, color)).value;
 
+		if(depth == 2) {
+				cout << "current value is: " << current_value << ", " << best_move << endl;
+				cout << "best value is: " << best_value << endl;
+		}
+
+
 		if(current_value > best_value) {
 			best_value = current_value;
 			best_move = available_moves[i];
+			if(depth == 2)
+				cout << "replaced best value." << endl;
 		}
 
 		if(current_value > alpha)
 			alpha = current_value;
 
-		if(alpha > beta)
+		if(depth == 2)
+				cout << "alpha: " << alpha << ", beta: " << beta << endl;
+		if(alpha > beta) {
 			break;
+		}
 	}
 
 	return {best_move, best_value};
