@@ -4,6 +4,7 @@
 #include <cfloat>
 #include <algorithm>
 #include <iostream>
+#include <climits>
 
 /*------------------------------------------------------------------------------------*/
 /* DEFINES -- Most Heiuristic Values */
@@ -28,7 +29,7 @@ string AI::get_move(Reversi game, Difficulty d){
 		move = get_greedy_move(game);
 		break;
 	case HARD:
-		move = nega_max(game, 3, -DBL_MAX, DBL_MAX, 1).move;
+		move = nega_max(game, 2, -DBL_MAX, DBL_MAX, 1).move;
 		break;
 	case RANDOM:
 		break;
@@ -95,10 +96,10 @@ AI::NegaReturn AI::nega_max(Reversi game, int depth, double alpha, double beta, 
 //Picks the best available move based on weighted tile values
 string AI::get_educated_move(Reversi game){
 	vector<Position> available_moves = game.get_available_move_positions();
-	int value = 0;
+	int value = INT_MIN;
 	Position best_move;
 	for(unsigned int i=0; i < available_moves.size(); i++)
-		if(value_table[available_moves[i].row][available_moves[i].column] >value){
+		if(value_table[available_moves[i].row][available_moves[i].column] > value){
 			value = value_table[available_moves[i].row][available_moves[i].column];
 			best_move.row = available_moves[i].row;
 			best_move.column = available_moves[i].column;

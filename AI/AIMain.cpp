@@ -12,20 +12,23 @@ int main(){
 	cout << "Initialized AI\n";
 	Reversi game;
 	game.set_current_player('w');
-	cout << "Easy move string: " << ai.get_move(game, AI::EASY) << "\nMedium move string: " << ai.get_move(game, AI::MEDIUM) << "\nHard move string: " << ai.get_move(game, AI::HARD) << '\n';
+	//cout << "Easy move string: " << ai.get_move(game, AI::EASY) << "\nMedium move string: "
+	//	<< ai.get_move(game, AI::MEDIUM) << "\nHard move string: " << ai.get_move(game, AI::HARD) << '\n';
 	cout << "Beginning game play!\n";
 	while(!game.is_game_over()) {
-		cout << ";----------MAKE HARD MOVE----------\n";
-		game.make_move(ai.get_move(game,AI::HARD));
-		cout << "MOVE:" << game.get_previous_move() << '\n';
-		cout << game.get_state_string();
-		sleep(1);
-		if(!game.is_game_over()){
+		if(!game.is_game_over() && game.get_current_player() == 'w') {
+			cout << ";----------MAKE HARD MOVE----------\n";
+			game.make_move(ai.get_move(game,AI::HARD));
+			cout << "MOVE:" << game.get_previous_move() << '\n';
+			cout << game.get_state_string();
+			//sleep(1);
+		}
+		if(!game.is_game_over() && game.get_current_player() == 'b'){
 			cout << ";----------MAKE EASY MOVE----------\n";
 			game.make_move(ai.get_move(game,AI::EASY));
 			cout << "MOVE:" << game.get_previous_move() << '\n';
 			cout << game.get_state_string();
-			sleep(1);
+			//sleep(1);
 		}
 	}
 	return 0;
