@@ -45,6 +45,7 @@ string socket_read(int sock){
 int main(int argc, char * argv[]) {
 	int c;
 	unsigned short port(50000);
+	bool connection_error=false;
 	string host_name("localhost");
 	while ((c=getopt(argc, argv, "h:p:")) != -1){  //option handling... coordinator takes arguments
 		switch(c){
@@ -68,10 +69,15 @@ int main(int argc, char * argv[]) {
 	sin.sin_port=port;
 	string host=host_name;
 	if(struct hostent * phe=gethostbyname(host.c_str())) memcpy(&sin.sin_addr, phe->h_addr, phe->h_length);
-	else if ((sin.sin_addr.s_addr=inet_addr(host.c_str())) == INADDR_NONE) cout << "error1";
-	int sock=socket(AF_INET, SOCK_STREAM,0);
-	connect(sock, (struct sockaddr *)&sin, sizeof(sin));
+	else if ((sin.sin_addr.s_addr=inet_addr(host.c_str())) == INADDR_NONE) connection_error=true;
+	int sock=socket(AF_INET, SOCK_STREAM,0); 
+	if(!sock) connection_error=true;
+	if(connect(sock, (struct sockaddr *)&sin, sizeof(sin))) connection_error=true;
 	string s;
+	if(connection_error){
+		cout << "Error Connecting to Server!\n";
+		return -1;
+	}
 	pid_t pid=fork();
 	while(true){
 		if(pid==0){	//child
