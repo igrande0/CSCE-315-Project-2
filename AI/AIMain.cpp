@@ -19,7 +19,14 @@ int main(){
 		game.make_move(ai.get_move(game,AI::HARD));
 		cout << "MOVE:" << game.get_previous_move() << '\n';
 		cout << game.get_state_string();
-		sleep(2);
+		sleep(1);
+		if(!game.is_game_over()){
+			cout << ";----------MAKE EASY MOVE----------\n";
+			game.make_move(ai.get_move(game,AI::EASY));
+			cout << "MOVE:" << game.get_previous_move() << '\n';
+			cout << game.get_state_string();
+			sleep(1);
+		}
 	}
 	return 0;
 }

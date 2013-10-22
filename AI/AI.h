@@ -69,6 +69,8 @@ private:
 	double corners(Reversi game);
 	double stability(Reversi game);
 
+	bool is_corner(Position p);
+	bool check_direction(Position current_position, Reversi game, int x_step, int y_step);
 	vector<Position> get_unstable_tiles(Reversi game);
 	vector<Position> get_move_tiles(Position start, int x_step, int y_step, Reversi game);
 };

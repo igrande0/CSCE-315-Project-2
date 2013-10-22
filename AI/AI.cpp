@@ -65,25 +65,25 @@ AI::NegaReturn AI::nega_max(Reversi game, int depth, double alpha, double beta, 
 			current_value = -(nega_max(new_game, depth-1, -beta, -alpha, -color)).value;
 		else
 			current_value = (nega_max(new_game, depth-1, alpha, beta, color)).value;
-
+		/*
 		if(depth == 2) {
 				cout << "current value is: " << current_value << ", " << best_move << endl;
 				cout << "best value is: " << best_value << endl;
 		}
-
+		*/
 
 		if(current_value > best_value) {
 			best_value = current_value;
 			best_move = available_moves[i];
-			if(depth == 2)
-				cout << "replaced best value." << endl;
+			/*if(depth == 2)
+				cout << "replaced best value." << endl;*/
 		}
 
 		if(current_value > alpha)
 			alpha = current_value;
 
-		if(depth == 2)
-				cout << "alpha: " << alpha << ", beta: " << beta << endl;
+		/*if(depth == 2)
+				cout << "alpha: " << alpha << ", beta: " << beta << endl;*/
 		if(alpha > beta) {
 			break;
 		}
@@ -319,10 +319,115 @@ double AI::stability(Reversi game) {
 	// semi-stable tiles are tiles that are neither stable nor unstable
 	// therefore, we do not need to explicitly search for semi-stable tiles
 
+	vector<vector<char>> current_board = game.get_board();
+	Position p;
+	vector<Position> closed_spaces;
+
+	double number = 0;
+
+	for(unsigned int i=0; i<8; i++){
+		for(unsigned int j=0; j<8; j++){
+			if(current_board[i][j] != 'o'){
+				p.row = i;
+				p.column = j;
+				closed_spaces.push_back(p);
+			}	
+		}
+	}
+	bool check = false;
+	for(unsigned int i=0; i<closed_spaces.size(); i++){
+		bool check = false;
+		int x_step, y_step;
+
+		if(is_corner(closed_spaces[i]))			//if tile is corner then it is always stable
+			check == true;
+		else if(closed_spaces[i].row == 0 || closed_spaces[i].row == 7){			//if on top or bottom edge we only need to check to see if the entire edge is filled
+			x_step = 0;
+			y_step = -1;
+			check = check_direction(closed_spaces[i], game, x_step, y_step);		//check above
+
+			y_step = 1;
+			if(check)
+				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check below
+		}
+		else if(closed_spaces[i].column == 0 || closed_spaces[i].column == 7){		//if on right or left we only need to check if the entire edge is filled
+			y_step = 0;
+			x_step = 1;
+			if(check)
+				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check right
+
+			x_step = -1;
+			if(check)
+				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check left
+		}
+		else{
+			x_step = 0;
+			y_step = -1;
+			check = check_direction(closed_spaces[i], game, x_step, y_step);		//check above
+
+			y_step = 1;
+			if(check)
+				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check below
+
+			y_step = 0;
+			x_step = 1;
+			if(check)
+				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check right
+
+			x_step = -1;
+			if(check)
+				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check left
+
+			y_step = -1;
+			if(check)
+				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check top left
+
+			x_step = 1;
+			if(check)
+				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check top right
+
+			y_step = 1;
+			if(check)
+				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check bottom right
+
+			x_step = -1;
+			if(check)
+				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check bottom left
+		}
+		
+		if(check)
+			number = number + 1;
+	}
+	return number;
+
 	if(max_player_stability + min_player_stability == 0)
 		return 0;
 	else
 		return 100*(max_player_stability - min_player_stability)/(max_player_stability + min_player_stability);
+}
+
+bool AI::is_corner(Position p){
+	if((p.row == 0 || p.row == 7) && (p.column == 0 || p.column == 7))
+		return true;
+	else
+		return false;
+}
+
+bool AI::check_direction(Position current_position, Reversi game, int x_step, int y_step){
+	vector<vector<char>> board = game.get_board();
+	bool check = true;
+	int x = current_position.row + x_step;
+	int y = current_position.column + y_step;
+
+	while(x >= 0 && x <= 7 && y >= 0 && y <= 7){
+		if(board[x][y] == 'o'){
+			check = false;
+			break;
+		}
+		x += x_step;
+		y += y_step;
+	}
+	return check;
 }
 
 bool sort_positions(const Position& left, const Position& right) {
