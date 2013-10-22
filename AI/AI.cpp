@@ -298,13 +298,14 @@ double AI::corners(Reversi game) {
  * stable tile: coins which cannot be flanked at any piont of time in the game from the given state
  * unstable tile: coins that could be flanked in the very next move
  * semi-stable tile: coins that could potentially be flanked in the future, but not in the next move
- ****************************************INCOMPLETE********************************************
  */
 double AI::stability(Reversi game) {
 	int max_player_stability = 0;
 	int min_player_stability = 0;
 	int max_player_unstable;
 	int min_player_unstable;
+	int max_player_stable;
+	int min_player_stable;
 	Reversi new_game = game;
 	new_game.toggle_player();
 	new_game.update_state();
@@ -315,10 +316,19 @@ double AI::stability(Reversi game) {
 	max_player_unstable = max_unstable.size();
 	min_player_unstable = min_unstable.size();
 
-	// *******************NEED TO FINISH - STABLE TILE CALCULATION*******************
-	// semi-stable tiles are tiles that are neither stable nor unstable
-	// therefore, we do not need to explicitly search for semi-stable tiles
+	min_player_stable = get_num_stable_tiles(game);
+	max_player_stable = get_num_stable_tiles(new_game);
 
+	max_player_stability = max_player_stable - max_player_unstable;
+	min_player_stability = min_player_stable - min_player_unstable;
+
+	if(max_player_stability + min_player_stability == 0)
+		return 0;
+	else
+		return 100*(max_player_stability - min_player_stability)/(max_player_stability + min_player_stability);
+}
+
+int AI::get_num_stable_tiles(Reversi game) {
 	vector<vector<char>> current_board = game.get_board();
 	Position p;
 	vector<Position> closed_spaces;
@@ -394,16 +404,10 @@ double AI::stability(Reversi game) {
 			if(check)
 				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check bottom left
 		}
-		
 		if(check)
 			number = number + 1;
 	}
 	return number;
-
-	if(max_player_stability + min_player_stability == 0)
-		return 0;
-	else
-		return 100*(max_player_stability - min_player_stability)/(max_player_stability + min_player_stability);
 }
 
 bool AI::is_corner(Position p){
