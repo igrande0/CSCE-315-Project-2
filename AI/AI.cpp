@@ -22,10 +22,10 @@ string AI::get_move(Reversi game, Difficulty d){
 
 	switch(d){
 	case EASY:
-		move = get_greedy_move(game);
+		move = get_educated_move(game);
 		break;
 	case MEDIUM:
-		move = get_educated_move(game);
+		move = get_greedy_move(game);
 		break;
 	case HARD:
 		move = nega_max(game, 3, -DBL_MAX, DBL_MAX, 1).move;
