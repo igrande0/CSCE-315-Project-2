@@ -15,8 +15,8 @@ int main(){
 	cout << "Easy move string: " << ai.get_move(game, AI::EASY) << "\nMedium move string: " << ai.get_move(game, AI::MEDIUM) << "\nHard move string: " << ai.get_move(game, AI::HARD) << '\n';
 	cout << "Beginning game play!\n";
 	while(!game.is_game_over()) {
-		cout << ";----------MAKE MEDIUM MOVE----------\n";
-		game.make_move(ai.get_move(game,AI::MEDIUM));
+		cout << ";----------MAKE HARD MOVE----------\n";
+		game.make_move(ai.get_move(game,AI::HARD));
 		cout << "MOVE:" << game.get_previous_move() << '\n';
 		cout << game.get_state_string();
 		sleep(1);

@@ -327,7 +327,7 @@ double AI::stability(Reversi game) {
 
 	for(unsigned int i=0; i<8; i++){
 		for(unsigned int j=0; j<8; j++){
-			if(current_board[i][j] != 'o'){
+			if(current_board[i][j] == game.get_current_player()){
 				p.row = i;
 				p.column = j;
 				closed_spaces.push_back(p);
