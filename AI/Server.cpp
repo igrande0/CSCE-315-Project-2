@@ -148,7 +148,7 @@ void Server::play_game(int sock){
 			string move, opponent_move;
 			string opponent_move_partial;
 			size_t found_index;
-			upper_s = upper_s.substr(6); //This will remove "AI-AI "
+			upper_s = s.substr(6); //This will remove "AI-AI "
 			string server = get_word(upper_s);
 			int port = atoi(get_word(upper_s).c_str());
 			string difficulty1 = get_word(upper_s);
@@ -159,6 +159,7 @@ void Server::play_game(int sock){
 			sin.sin_family=AF_INET;
 			sin.sin_port=port;
 			string host=server;
+			//cout << "'" << port << "'  '" << server << "'\n"; 
 			if(struct hostent * phe=gethostbyname(host.c_str())){
 				memcpy(&sin.sin_addr, phe->h_addr, phe->h_length);
 			}
@@ -168,27 +169,45 @@ void Server::play_game(int sock){
 			if(!(AI_sock=socket(AF_INET, SOCK_STREAM,0))){
 				error=true;
 			}
-			if(!connect(sock, (struct sockaddr *)&sin, sizeof(sin))){
+			if(connect(sock, (struct sockaddr *)&sin, sizeof(sin))){
 				error=true;
 			}
 			string s;
 			if(error){
-					socket_write(sock,"ILLEGAL\n");
-					socket_write(sock, ";Command is valid, but unable to connect with specified server\n");
+					socket_write(sock,"ILLEGAL\n;Command is valid, but unable to connect with specified server\n");
 			}
 			else{
 				socket_write(sock,"OK\n");
+				socket_write(sock,socket_read(AI_sock));
 				socket_write(AI_sock,"HUMAN-AI");
 				socket_write(sock,"HUMAN-AI\n");
 				socket_write(sock,socket_read(AI_sock));
 				socket_write(AI_sock,"WHITE");
 				socket_write(sock,"WHITE\n");
 				socket_write(sock,socket_read(AI_sock));
-				socket_write(AI_sock,"HARD");
-				socket_write(sock,"HARD\n");
+				if(difficulty2=="EASY"){
+					socket_write(AI_sock,"EASY");
+					socket_write(sock,"EASY\n");
+				}
+				else if(difficulty2 == "MEDIUM"){
+					socket_write(AI_sock,"MEDIUM");
+					socket_write(sock,"MEDIUM\n");
+				}
+				else{
+					socket_write(AI_sock,"HARD");
+					socket_write(sock,"HARD\n");
+				}
 				socket_write(sock,socket_read(AI_sock));
-				while(true){
-					move=ai.get_move(game,AI::HARD);
+				while(!game.is_game_over()){
+					if(difficulty1=="EASY"){
+						move=ai.get_move(game,AI::EASY);
+					}
+					else if(difficulty1=="MEDIUM"){
+						move=ai.get_move(game,AI::EASY);
+					}
+					else{
+						move=ai.get_move(game,AI::HARD);
+					}
 					game.make_move(move);
 					socket_write(AI_sock,move);
 					socket_write(sock,move);
