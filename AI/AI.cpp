@@ -350,7 +350,6 @@ int AI::get_num_stable_tiles(Reversi game, vector<Position> player_pieces) {
 
 	for(unsigned int i=0; i< player_pieces.size(); i++){
 		bool is_stable = false;
-		int x_step, y_step;
 
 		// if tile is corner then it is always stable
 		if(is_corner(player_pieces[i]))			
