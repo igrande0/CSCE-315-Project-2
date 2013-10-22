@@ -24,8 +24,8 @@ int main(){
 			//sleep(1);
 		}
 		if(!game.is_game_over() && game.get_current_player() == 'b'){
-			cout << ";----------MAKE EASY MOVE----------\n";
-			game.make_move(ai.get_move(game,AI::EASY));
+			cout << ";----------MAKE MEDIUM MOVE----------\n";
+			game.make_move(ai.get_move(game,AI::MEDIUM));
 			cout << "MOVE:" << game.get_previous_move() << '\n';
 			cout << game.get_state_string();
 			//sleep(1);

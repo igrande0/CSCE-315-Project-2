@@ -7,12 +7,19 @@
 #include <climits>
 
 /*------------------------------------------------------------------------------------*/
-/* DEFINES -- Most Heiuristic Values */
+/* DEFINES and HELPER FUNCTIONS */
 /*------------------------------------------------------------------------------------*/
 
 #define CAPTURED_CORNER_WEIGHT 99
 #define POTENTIAL_CORNER_WEIGHT 33
-#define UNLIKELY_CORNER_WEIGHT 1
+
+bool less_than(const Position& left, const Position& right) {
+	return (left.row*10 + left.column) < (right.row*10 + right.column);
+}
+
+bool equals(const Position& left, const Position& right) {
+	return left.row == right.row && left.column == right.column;
+}
 
 /*------------------------------------------------------------------------------------*/
 /* PUBLIC FUNCTION */
@@ -29,7 +36,7 @@ string AI::get_move(Reversi game, Difficulty d){
 		move = get_greedy_move(game);
 		break;
 	case HARD:
-		move = nega_max(game, 2, -DBL_MAX, DBL_MAX, 1).move;
+		move = nega_max(game, 3, -DBL_MAX, DBL_MAX, 1).move;
 		break;
 	case RANDOM:
 		break;
@@ -66,25 +73,15 @@ AI::NegaReturn AI::nega_max(Reversi game, int depth, double alpha, double beta, 
 			current_value = -(nega_max(new_game, depth-1, -beta, -alpha, -color)).value;
 		else
 			current_value = (nega_max(new_game, depth-1, alpha, beta, color)).value;
-		/*
-		if(depth == 2) {
-				cout << "current value is: " << current_value << ", " << best_move << endl;
-				cout << "best value is: " << best_value << endl;
-		}
-		*/
 
 		if(current_value > best_value) {
 			best_value = current_value;
 			best_move = available_moves[i];
-			/*if(depth == 2)
-				cout << "replaced best value." << endl;*/
 		}
 
 		if(current_value > alpha)
 			alpha = current_value;
 
-		/*if(depth == 2)
-				cout << "alpha: " << alpha << ", beta: " << beta << endl;*/
 		if(alpha > beta) {
 			break;
 		}
@@ -216,50 +213,24 @@ double AI::corners(Reversi game) {
 	int min_captured = 0;
 	int max_potential = 0;
 	int min_potential = 0;
-	int max_unlikely = 0;
-	int min_unlikely = 0;
-	vector<Position> open_space_max = game.get_open_spaces();
-	vector<Position> available_moves_max = game.get_available_move_positions();
-	// potential corners
-	for(int i = 0; i < available_moves_max.size(); i++ ){
-		if(available_moves_max[i].row == (0 || 7) ){
-			if(available_moves_max[i].column == (0 || 7))
-				max_potential++;
-		}
-	}
-	// unlikely corners
-	int max_open = 0;
-	for(int k = 0; k < open_space_max.size(); k++ ){
-		if(open_space_max[k].row == (0 || 7) ){
-			if(open_space_max[k].column == (0 || 7))
-				max_open++;
-		}
-	}
-	max_unlikely = max_open - max_potential;
 
-	//opponent 
 	Reversi new_game = game;
 	new_game.toggle_player();
 	new_game.update_state();
-	vector<Position> open_space_min = game.get_open_spaces();
+
+	vector<Position> available_moves_max = game.get_available_move_positions();
 	vector<Position> available_moves_min = new_game.get_available_move_positions();
+
 	// potential corners
-	for(int i = 0; i < available_moves_min.size(); i++ ){
-		if(available_moves_min[i].row == (0 || 7) ){
-			if(available_moves_min[i].column == (0 || 7))
-				min_potential++;
-		}
-	}
-	// unlikely corners
-	int min_open = 0;
-	for(int k = 0; k < open_space_min.size(); k++ ){
-		if(open_space_min[k].row == (0 || 7) ){
-			if(open_space_min[k].column == (0 || 7))
-				min_open++;
-		}
-	}
-	min_unlikely = min_open - min_potential; 
-	
+	for(int i = 0; i < available_moves_max.size(); i++ )
+		if(is_corner(available_moves_max[i]))
+			max_potential++;
+
+	for(int i = 0; i < available_moves_min.size(); i++ )
+		if(is_corner(available_moves_min[i]))
+			min_potential++;
+
+	// captured corners	
 	vector<vector<char>> board = game.get_board();
 	char max_player = game.get_current_player();
 	char min_player = new_game.get_current_player();
@@ -282,10 +253,9 @@ double AI::corners(Reversi game) {
 	if(board[7][7] == min_player)
 		min_captured++;
 
-	//cout << "max_captured= " << max_captured << " max_potential= " << max_potential << " max_unlikely= " << max_unlikely << '\n';
-	//cout << "min_captured= " << min_captured << " min_potential= " << min_potential << " min_unlikely= " << min_unlikely << '\n';
-	max_player_corner = max_captured*CAPTURED_CORNER_WEIGHT + max_potential*POTENTIAL_CORNER_WEIGHT + max_unlikely*UNLIKELY_CORNER_WEIGHT;
-	min_player_corner = min_captured*CAPTURED_CORNER_WEIGHT + min_potential*POTENTIAL_CORNER_WEIGHT + min_unlikely*UNLIKELY_CORNER_WEIGHT;
+	// overall corner score
+	max_player_corner = max_captured*CAPTURED_CORNER_WEIGHT + max_potential*POTENTIAL_CORNER_WEIGHT;
+	min_player_corner = min_captured*CAPTURED_CORNER_WEIGHT + min_potential*POTENTIAL_CORNER_WEIGHT;
 
 	if(max_player_corner + min_player_corner == 0)
 		return 0;
@@ -303,25 +273,52 @@ double AI::corners(Reversi game) {
 double AI::stability(Reversi game) {
 	int max_player_stability = 0;
 	int min_player_stability = 0;
-	int max_player_unstable;
-	int min_player_unstable;
-	int max_player_stable;
-	int min_player_stable;
+	int max_unstable_count;
+	int min_unstable_count;
+	int max_stable_count;
+	int min_stable_count;
+
 	Reversi new_game = game;
 	new_game.toggle_player();
 	new_game.update_state();
+
+	// find all player pieces
+	vector<Position> all_max_pieces = get_player_pieces(game);
+	vector<Position> all_min_pieces = get_player_pieces(new_game);
 	
+	// find unstable player pieces
 	vector<Position> min_unstable = get_unstable_tiles(game);
 	vector<Position> max_unstable = get_unstable_tiles(new_game);
+	
+	max_unstable_count = max_unstable.size();
+	min_unstable_count = min_unstable.size();
 
-	max_player_unstable = max_unstable.size();
-	min_player_unstable = min_unstable.size();
+	// sort all position vectors
+	sort(all_max_pieces.begin(), all_max_pieces.end(), less_than);
+	sort(all_min_pieces.begin(), all_min_pieces.end(), less_than);
+	sort(max_unstable.begin(), max_unstable.end(), less_than);
+	sort(min_unstable.begin(), min_unstable.end(), less_than);
 
-	min_player_stable = get_num_stable_tiles(game);
-	max_player_stable = get_num_stable_tiles(new_game);
+	// get pieces of unknown stability
+	vector<Position> unknown_max_pieces(all_max_pieces.size());
+	vector<Position> unknown_min_pieces(all_min_pieces.size());
 
-	max_player_stability = max_player_stable - max_player_unstable;
-	min_player_stability = min_player_stable - min_player_unstable;
+	vector<Position>::iterator end;
+	
+	end = set_difference(all_max_pieces.begin(), all_max_pieces.end(),
+		max_unstable.begin(), max_unstable.end(), unknown_max_pieces.begin(), less_than);
+	unknown_max_pieces.resize(end - unknown_max_pieces.begin());
+
+	end = set_difference(all_min_pieces.begin(), all_min_pieces.end(),
+		min_unstable.begin(), min_unstable.end(), unknown_min_pieces.begin(), less_than);
+	unknown_min_pieces.resize(end - unknown_min_pieces.begin());
+
+	// determine stable pieces
+	max_stable_count = get_num_stable_tiles(game, unknown_max_pieces);
+	min_stable_count = get_num_stable_tiles(new_game, unknown_min_pieces);
+
+	max_player_stability = max_stable_count - max_unstable_count;
+	min_player_stability = min_stable_count - min_unstable_count;
 
 	if(max_player_stability + min_player_stability == 0)
 		return 0;
@@ -329,93 +326,96 @@ double AI::stability(Reversi game) {
 		return 100*(max_player_stability - min_player_stability)/(max_player_stability + min_player_stability);
 }
 
-int AI::get_num_stable_tiles(Reversi game) {
+vector<Position> AI::get_player_pieces(Reversi game) {
 	vector<vector<char>> current_board = game.get_board();
 	Position p;
-	vector<Position> closed_spaces;
+	vector<Position> player_pieces;
 
-	double number = 0;
-
+	// find all of the current player's pieces
 	for(unsigned int i=0; i<8; i++){
 		for(unsigned int j=0; j<8; j++){
 			if(current_board[i][j] == game.get_current_player()){
 				p.row = i;
 				p.column = j;
-				closed_spaces.push_back(p);
+				player_pieces.push_back(p);
 			}	
 		}
 	}
-	bool check = false;
-	for(unsigned int i=0; i<closed_spaces.size(); i++){
-		bool check = false;
+	
+	return player_pieces;
+}
+
+int AI::get_num_stable_tiles(Reversi game, vector<Position> player_pieces) {
+	int num_stable = 0;
+
+	for(unsigned int i=0; i< player_pieces.size(); i++){
+		bool is_stable = false;
 		int x_step, y_step;
 
-		if(is_corner(closed_spaces[i]))			//if tile is corner then it is always stable
-			check == true;
-		else if(closed_spaces[i].row == 0 || closed_spaces[i].row == 7){			//if on top or bottom edge we only need to check to see if the entire edge is filled
-			x_step = 0;
-			y_step = -1;
-			check = check_direction(closed_spaces[i], game, x_step, y_step);		//check above
+		// if tile is corner then it is always stable
+		if(is_corner(player_pieces[i]))			
+			is_stable = true;
 
-			y_step = 1;
-			if(check)
-				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check below
+		// if on top or bottom edge we only need to check to see if the entire edge is filled
+		else if(player_pieces[i].row == 0 || player_pieces[i].row == 7){			
+			//check right
+			if(is_stable)
+				is_stable = check_direction(player_pieces[i], game, 1, 0);		
+
+			//check left
+			if(is_stable)
+				is_stable = check_direction(player_pieces[i], game, -1, 0);		
 		}
-		else if(closed_spaces[i].column == 0 || closed_spaces[i].column == 7){		//if on right or left we only need to check if the entire edge is filled
-			y_step = 0;
-			x_step = 1;
-			if(check)
-				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check right
 
-			x_step = -1;
-			if(check)
-				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check left
+		// if on right or left we only need to check if the entire edge is filled
+		else if(player_pieces[i].column == 0 || player_pieces[i].column == 7){		
+			//check above
+			is_stable = check_direction(player_pieces[i], game, 0, -1);		
+
+			//check below
+			if(is_stable)
+				is_stable = check_direction(player_pieces[i], game, 0, 1);		
 		}
 		else{
-			x_step = 0;
-			y_step = -1;
-			check = check_direction(closed_spaces[i], game, x_step, y_step);		//check above
+			//check above
+			is_stable = check_direction(player_pieces[i], game, 0, -1);
 
-			y_step = 1;
-			if(check)
-				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check below
+			//check below
+			if(is_stable)
+				is_stable = check_direction(player_pieces[i], game, 0, 1);
 
-			y_step = 0;
-			x_step = 1;
-			if(check)
-				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check right
+			//check right
+			if(is_stable)
+				is_stable = check_direction(player_pieces[i], game, 1, 0);
 
-			x_step = -1;
-			if(check)
-				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check left
+			//check left
+			if(is_stable)
+				is_stable = check_direction(player_pieces[i], game, -1, 0);
 
-			y_step = -1;
-			if(check)
-				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check top left
+			//check top left
+			if(is_stable)
+				is_stable = check_direction(player_pieces[i], game, -1, -1);
 
-			x_step = 1;
-			if(check)
-				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check top right
+			//check top right
+			if(is_stable)
+				is_stable = check_direction(player_pieces[i], game, 1, -1);
+			
+			//check bottom right
+			if(is_stable)
+				is_stable = check_direction(player_pieces[i], game, 1, 1);
 
-			y_step = 1;
-			if(check)
-				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check bottom right
-
-			x_step = -1;
-			if(check)
-				check = check_direction(closed_spaces[i], game, x_step, y_step);		//check bottom left
+			//check bottom left
+			if(is_stable)
+				is_stable = check_direction(player_pieces[i], game, -1, 1);	
 		}
-		if(check)
-			number = number + 1;
+		if(is_stable)
+			++num_stable;
 	}
-	return number;
+	return num_stable;
 }
 
 bool AI::is_corner(Position p){
-	if((p.row == 0 || p.row == 7) && (p.column == 0 || p.column == 7))
-		return true;
-	else
-		return false;
+	return (p.row == 0 || p.row == 7) && (p.column == 0 || p.column == 7);
 }
 
 bool AI::check_direction(Position current_position, Reversi game, int x_step, int y_step){
@@ -435,14 +435,6 @@ bool AI::check_direction(Position current_position, Reversi game, int x_step, in
 	return check;
 }
 
-bool sort_positions(const Position& left, const Position& right) {
-	return (left.row*10 + left.column) < (right.row*10 + right.column);
-}
-
-bool equal_positions(const Position& left, const Position& right) {
-	return left.row == right.row && left.column == right.column;
-}
-
 vector<Position> AI::get_unstable_tiles(Reversi game) {
 	vector<Position> available_moves = game.get_available_move_positions();
 	vector<Position> unstable_tiles;
@@ -450,34 +442,42 @@ vector<Position> AI::get_unstable_tiles(Reversi game) {
 	for(unsigned int i = 0; i < available_moves.size(); ++i) {
 		vector<Position> temp_positions;
 
-		temp_positions = get_move_tiles(available_moves[i], 0, -1, game);		//check above
+		//check above
+		temp_positions = get_move_tiles(available_moves[i], 0, -1, game);
 		unstable_tiles.insert(unstable_tiles.end(), temp_positions.begin(), temp_positions.end());
 
-		temp_positions = get_move_tiles(available_moves[i], 0, 1, game);		//check below
+		//check below
+		temp_positions = get_move_tiles(available_moves[i], 0, 1, game);
 		unstable_tiles.insert(unstable_tiles.end(), temp_positions.begin(), temp_positions.end());
 
-		temp_positions = get_move_tiles(available_moves[i], 1, 0, game);		//check right
+		//check right
+		temp_positions = get_move_tiles(available_moves[i], 1, 0, game);
 		unstable_tiles.insert(unstable_tiles.end(), temp_positions.begin(), temp_positions.end());
 
-		temp_positions = get_move_tiles(available_moves[i], -1, 0, game);		//check left
+		//check left
+		temp_positions = get_move_tiles(available_moves[i], -1, 0, game);
 		unstable_tiles.insert(unstable_tiles.end(), temp_positions.begin(), temp_positions.end());
 
-		temp_positions = get_move_tiles(available_moves[i], -1, -1, game);		//check top left
+		//check top left
+		temp_positions = get_move_tiles(available_moves[i], -1, -1, game);
 		unstable_tiles.insert(unstable_tiles.end(), temp_positions.begin(), temp_positions.end());
 
-		temp_positions = get_move_tiles(available_moves[i], 1, -1, game);		//check top right
+		//check top right
+		temp_positions = get_move_tiles(available_moves[i], 1, -1, game);
 		unstable_tiles.insert(unstable_tiles.end(), temp_positions.begin(), temp_positions.end());
 
-		temp_positions = get_move_tiles(available_moves[i], 1, 1, game);		//check bottom right
+		//check bottom right
+		temp_positions = get_move_tiles(available_moves[i], 1, 1, game);
 		unstable_tiles.insert(unstable_tiles.end(), temp_positions.begin(), temp_positions.end());
 
-		temp_positions = get_move_tiles(available_moves[i], -1, 1, game);		//check bottom left
+		//check bottom left
+		temp_positions = get_move_tiles(available_moves[i], -1, 1, game);
 		unstable_tiles.insert(unstable_tiles.end(), temp_positions.begin(), temp_positions.end());
 	}
 
-	// REMOVE DUPLICATES
-	sort(unstable_tiles.begin(), unstable_tiles.end(), sort_positions);
-	auto last = unique(unstable_tiles.begin(), unstable_tiles.end(), equal_positions);
+	// remove duplicates
+	sort(unstable_tiles.begin(), unstable_tiles.end(), less_than);
+	auto last = unique(unstable_tiles.begin(), unstable_tiles.end(), equals);
 	unstable_tiles.erase(last, unstable_tiles.end());
 
 	return unstable_tiles;
