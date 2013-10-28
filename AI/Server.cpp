@@ -148,7 +148,7 @@ void Server::play_game(int sock){
 			string move, opponent_move;
 			string opponent_move_partial;
 			size_t found_index;
-			upper_s = s.substr(6); //This will remove "AI-AI "
+			upper_s = upper_s.substr(6); //This will remove "AI-AI "
 			string server = get_word(upper_s);
 			int port = atoi(get_word(upper_s).c_str());
 			string difficulty1 = get_word(upper_s);
@@ -166,10 +166,11 @@ void Server::play_game(int sock){
 			else if ((sin.sin_addr.s_addr=inet_addr(host.c_str())) == INADDR_NONE){
 				error=true;
 			}
-			if(!(AI_sock=socket(AF_INET, SOCK_STREAM,0))){
+			AI_sock=socket(AF_INET, SOCK_STREAM,0);
+			if(!AI_sock){
 				error=true;
 			}
-			if(connect(sock, (struct sockaddr *)&sin, sizeof(sin))){
+			if(connect(AI_sock, (struct sockaddr *)&sin, sizeof(sin))){
 				error=true;
 			}
 			string s;
@@ -185,6 +186,7 @@ void Server::play_game(int sock){
 				socket_write(AI_sock,"WHITE");
 				socket_write(sock,"WHITE\n");
 				socket_write(sock,socket_read(AI_sock));
+				game.set_current_player('w');
 				if(difficulty2=="EASY"){
 					socket_write(AI_sock,"EASY");
 					socket_write(sock,"EASY\n");
@@ -203,14 +205,14 @@ void Server::play_game(int sock){
 						move=ai.get_move(game,AI::EASY);
 					}
 					else if(difficulty1=="MEDIUM"){
-						move=ai.get_move(game,AI::EASY);
+						move=ai.get_move(game,AI::MEDIUM);
 					}
 					else{
 						move=ai.get_move(game,AI::HARD);
 					}
 					game.make_move(move);
 					socket_write(AI_sock,move);
-					socket_write(sock,move);
+					socket_write(sock,move + "\n");
 					opponent_move=socket_read(AI_sock);    //Note string parsing will have to be done here.
 					found_index = opponent_move.find_first_of("abcdefghABCDEFGH"); //Regex not implemented in gcc4.7 so find move letter
 					while (found_index != string::npos){ //Check if following or previous char is move integer
@@ -225,8 +227,9 @@ void Server::play_game(int sock){
 						game.make_move(opponent_move_partial);	//make move
 						found_index = opponent_move.find_first_of("abcdefghABCDEFGH",found_index+1);
 					}
-					socket_write(sock,opponent_move);
+					socket_write(sock,opponent_move + "\n");
 				}
+				socket_write(sock,"\n");	
 			}
 		}
 		else if(s[0]==';')
