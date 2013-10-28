@@ -1,3 +1,4 @@
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -5,16 +6,16 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.concurrent.ExecutionException;
-
+import java.util.concurrent.Semaphore;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
+import javax.swing.border.EmptyBorder;
 
 
 public class GUI extends JFrame implements ActionListener{
@@ -25,11 +26,20 @@ public class GUI extends JFrame implements ActionListener{
 	private static final long serialVersionUID = 1L;
 
 	static Socket gameSocket = null;
+	static Semaphore WorkerSemaphore = new Semaphore(1);
+	JPanel scorePanel, content, board;
+	static JLabel whiteScore;
+
+	static JLabel blackScore;
+	static GameSquare[][] gameGrid;
+	
 	
 	public void createButtonGrid(int width, int length){
-		JPanel content=new JPanel();
-		content.setLayout(new GridLayout(width,length));
-		GameSquare[][] gameGrid = new GameSquare[width][length];
+		content=new JPanel();
+		board = new JPanel();
+		board.setLayout(new GridLayout(width,length));
+		content.setLayout(new BorderLayout());
+		gameGrid = new GameSquare[width][length];
 		for(int y=0; y<length; y++){
 			for(int x=0; x<width; x++){
 				gameGrid[x][y]=new GameSquare(x,y);
@@ -48,9 +58,10 @@ public class GUI extends JFrame implements ActionListener{
 			    else if(x==4 && y==4){
 			    	gameGrid[x][y].setSquareColor("white");
 			    }
-			    content.add(gameGrid[x][y]);
+			    board.add(gameGrid[x][y]);
 			}
 		}
+		content.add(board, BorderLayout.CENTER);
 		content.setVisible(true);
 		setContentPane(content);
 	}
@@ -58,6 +69,14 @@ public class GUI extends JFrame implements ActionListener{
 	public GUI(int width, int length){
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		createButtonGrid(width,length);
+		scorePanel = new JPanel ();
+		scorePanel.setLayout(new BorderLayout());
+		whiteScore = new JLabel("White Score: 2", JLabel.CENTER);
+		blackScore = new JLabel("Black Score: 2", JLabel.CENTER);
+		scorePanel.add(whiteScore,BorderLayout.NORTH);
+		scorePanel.add(blackScore,BorderLayout.SOUTH);
+		scorePanel.setBorder(new EmptyBorder(300,50,300,50));
+		content.add(scorePanel, BorderLayout.EAST);
 		pack();
 	}
 	
@@ -69,23 +88,30 @@ public class GUI extends JFrame implements ActionListener{
 			System.out.println(e.getMessage());
 			System.exit(1);
 		}
+		String s = null;
+		try {
+			s = SocketRead(gameSocket);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(s);
 		GUI game = new GUI(8,8);
-		WorkerThread my_worker = new WorkerThread("HUMAN-AI\n");
+		WorkerThread my_worker = new WorkerThread("HUMAN-AI\0\n");
 		my_worker.execute();
-		my_worker = new WorkerThread("MEDIUM");
+		my_worker = new WorkerThread("MEDIUM\0\n");
 		my_worker.execute();
-		my_worker= new WorkerThread("WHITE");
+		my_worker= new WorkerThread("WHITE\0\n");
 		my_worker.execute();
 		game.setSize(1000,1000);
 		game.setVisible(true);
-		game.revalidate();
-		game.repaint();
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		System.out.println(((GameSquare) e.getSource()).getBoardLocation());
-		((GameSquare) e.getSource()).setSquareColor("white");
+		//System.out.println(((GameSquare) e.getSource()).getBoardLocation());
+		WorkerThread my_worker = new WorkerThread(((GameSquare) e.getSource()).getBoardLocation() + "\0\n");
+		my_worker.execute();
 	}
 	
 	public static int SocketWrite(Socket sock, String command)
@@ -99,7 +125,7 @@ public class GUI extends JFrame implements ActionListener{
 	public static String SocketRead(Socket sock) throws IOException { 
 		InputStream in = sock.getInputStream();
 		byte[] data = new byte[512];
-		sock.setSoTimeout(10);
+		sock.setSoTimeout(1000);
 		in.read(data, 0, 512);
 		String ret = new String(data, "ASCII");
 		return ret;
@@ -132,6 +158,7 @@ public class GUI extends JFrame implements ActionListener{
 			}
 			else{
 				setIcon(null);
+				setText(null);
 			}
 		}
 		
@@ -175,10 +202,21 @@ public class GUI extends JFrame implements ActionListener{
 		}
 		@Override
 		protected String doInBackground() throws Exception {
-			SocketWrite(gameSocket, data);
-			String s=SocketRead(gameSocket);
+			String s = new String("");
+			try {
+				WorkerSemaphore.acquire();
+				try {
+					SocketWrite(gameSocket, data);
+					s=SocketRead(gameSocket);
+				} finally {
+					WorkerSemaphore.release();
+				}
+			} catch (Exception e3) {
+				e3.printStackTrace();
+			}
 			return s;
 		}
+		
 		protected void done(){
 			String s = null;
 			try {
@@ -187,14 +225,54 @@ public class GUI extends JFrame implements ActionListener{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			if(s=="OK\n"){
-				System.out.println("Command Execute successfully");
-			}
-			else if(s=="ILLEGAL\n"){
-				System.out.println("Failed to execute command");
+			if(data.length()>4){
+				if(s.substring(0,2).equals("OK")){
+					System.out.println("Command Executed successfully");
+				}
+				else if(s.substring(0,7).equals("ILLEGAL")){
+					System.out.println("Failed to execute command: " + data);
+				}
 			}
 			else{
-				System.out.println("Flip tile log here!");
+				if(s.substring(0,7).equals("ILLEGAL")){
+					System.out.println("Illegal Move Detected");
+				}
+				else{
+					System.out.println(s);
+					int y=0;
+					String[] scores=s.split("\\s\\d");
+					
+					//whiteScore = new JLabel("White Score: " + whiteIntScore, JLabel.CENTER);
+					//blackScore = new JLabel("Black Score: " + blackIntScore, JLabel.CENTER);
+					String[] board = s.split(";");
+					for(String temp : board){
+						if(y>1 && y <10){
+							int x=0;
+							String[] line=temp.split("\\|");
+							for(String temp2 : line){
+								//System.out.println("'"+temp2+"'");
+								if(temp2.equals("@")){
+									gameGrid[x-1][y-2].setSquareColor("black");
+									//System.out.println("Detected a black piece");
+								}
+								else if(temp2.equals("O")){
+									gameGrid[x-1][y-2].setSquareColor("white");
+									//System.out.println("Detected a white piece");
+								}
+								else if(temp2.equals("_")){
+									gameGrid[x-1][y-2].setSquareColor("none");
+									//System.out.println("Detected an empty piece");
+								}
+								else{
+									//System.out.println("String matched no cases!");
+								}
+								x++;
+							}
+							//System.out.println();
+						}
+						y++;
+					}
+				}
 			}
 		}
 	}
