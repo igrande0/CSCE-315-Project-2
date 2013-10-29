@@ -221,10 +221,7 @@ public class GUI extends JFrame implements ActionListener{
 			String s = null;
 			try {
 				s = get();
-			} catch (ExecutionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InterruptedException e) {
+			} catch (InterruptedException | ExecutionException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
