@@ -36,7 +36,7 @@ string AI::get_move(Reversi game, Difficulty d){
 		move = get_greedy_move(game);
 		break;
 	case HARD:
-		move = nega_max(game, 3, -DBL_MAX, DBL_MAX, 1).move;
+		move = nega_max(game, 3, -DBL_MAX, DBL_MAX).move;
 		break;
 	case RANDOM:
 		break;
@@ -53,10 +53,10 @@ string AI::get_move(Reversi game, Difficulty d){
  * NegaMax is a variation of minimax that uses less recursion
  * For the maximizing player, color is 1; for the minimizing player, color is -1
  */
-AI::NegaReturn AI::nega_max(Reversi game, int depth, double alpha, double beta, double color) {
+AI::NegaReturn AI::nega_max(Reversi game, int depth, double alpha, double beta) {
 	// reached end of tree; return heuristic value of node
 	if(depth == 0 || game.is_game_over())
-		return {"", color*evaluate(game)};
+		return {"", evaluate(game)};
 
 	double best_value = -DBL_MAX;
 
@@ -70,9 +70,9 @@ AI::NegaReturn AI::nega_max(Reversi game, int depth, double alpha, double beta, 
 		
 		// consider whether next player is opponent or current player
 		if(new_game.get_current_player() != game.get_current_player())
-			current_value = -(nega_max(new_game, depth-1, -beta, -alpha, -color)).value;
+			current_value = -(nega_max(new_game, depth-1, -beta, -alpha)).value;
 		else
-			current_value = (nega_max(new_game, depth-1, alpha, beta, color)).value;
+			current_value = (nega_max(new_game, depth-1, alpha, beta)).value;
 
 		if(current_value > best_value) {
 			best_value = current_value;
@@ -82,7 +82,7 @@ AI::NegaReturn AI::nega_max(Reversi game, int depth, double alpha, double beta, 
 		if(current_value > alpha)
 			alpha = current_value;
 
-		if(alpha > beta) {
+		if(alpha >= beta) {
 			break;
 		}
 	}
@@ -141,6 +141,45 @@ string AI::get_greedy_move(Reversi game){
 /* HEURISTIC FUNCTIONS */
 /*------------------------------------------------------------------------------------*/
 
+double AI::table_stability(Reversi game) {
+	double max_table_score = 0;
+	double min_table_score = 0;
+
+	vector<vector<char>> board = game.get_board();
+	char max_player = game.get_current_player();
+	char min_player;
+	if(max_player == 'w')
+		min_player = 'b';
+	else
+		min_player = 'w';
+
+	if(game.is_game_over()) {
+		double white = game.get_white_score();
+		double black = game.get_black_score();
+		if(max_player == 'b')
+			return 100*(black - white)/(white + black);
+		else
+			return 100*(white - black)/(white + black);
+	}
+
+	for(int i = 0; i < board.size(); ++i) {
+		for(int j = 0; j < board[i].size(); ++j) {
+			if(board[i][j] == max_player)
+				max_table_score += value_table[i][j];
+			else if(board[i][j] == min_player)
+				min_table_score += value_table[i][j];
+		}
+	}
+
+	double score;
+	if(max_table_score + min_table_score)
+		score = 0;
+	else
+		score = (max_table_score - min_table_score)/(max_table_score + min_table_score);
+
+	return score;
+}
+
 /* Returns the heuristic value of a given game state
  * References: http://goo.gl/UA2uXu
 			   http://kartikkukreja.wordpress.com/2013/03/30/heuristic-function-for-reversiothello/
@@ -178,6 +217,8 @@ double AI::parity(Reversi game) {
 double AI::mobility(Reversi game) {
 	int max_player_mobility;
 	int min_player_mobility;
+	int max_player_potential = 0;
+	int min_player_potential = 0;
 	Reversi new_game = game;
 
 	max_player_mobility = game.get_available_move_strings().size();
@@ -187,9 +228,21 @@ double AI::mobility(Reversi game) {
 	
 	min_player_mobility = new_game.get_available_move_strings().size();
 
-	// may also need to somehow consider potential mobility
-	// calculated by counting the number of empty spaces next to at least one of the opponent's tile
-	// the potential mobility and actual mobility will have to somehow be weighted
+	vector<vector<char>> board = game.get_board();
+	char max_player_opp = new_game.get_current_player();
+	char min_player_opp = game.get_current_player();
+
+	for(int i = 0; i < board.size(); ++i) {
+		for(int j = 0; j < board[i].size(); ++j) {
+			if(board[i][j] == max_player_opp && check_potential(i,j,board))
+				++max_player_potential;
+			else if(board[i][j] == min_player_opp && check_potential(i,j, board))
+				++min_player_potential;
+		}
+	}
+
+	max_player_mobility += max_player_potential;
+	min_player_mobility += min_player_potential;
 
 	if(max_player_mobility + min_player_mobility == 0)
 		return 0;
@@ -221,14 +274,14 @@ double AI::corners(Reversi game) {
 	vector<Position> available_moves_max = game.get_available_move_positions();
 	vector<Position> available_moves_min = new_game.get_available_move_positions();
 
-	// potential corners
+	/*// potential corners
 	for(int i = 0; i < available_moves_max.size(); i++ )
 		if(is_corner(available_moves_max[i]))
 			max_potential++;
 
 	for(int i = 0; i < available_moves_min.size(); i++ )
 		if(is_corner(available_moves_min[i]))
-			min_potential++;
+			min_potential++;*/
 
 	// captured corners	
 	vector<vector<char>> board = game.get_board();
@@ -273,7 +326,7 @@ double AI::corners(Reversi game) {
 double AI::stability(Reversi game) {
 	int max_player_stability = 0;
 	int min_player_stability = 0;
-	int max_unstable_count;
+	/*int max_unstable_count;
 	int min_unstable_count;
 	int max_stable_count;
 	int min_stable_count;
@@ -318,7 +371,7 @@ double AI::stability(Reversi game) {
 	min_stable_count = get_num_stable_tiles(new_game, unknown_min_pieces);
 
 	max_player_stability = max_stable_count - max_unstable_count;
-	min_player_stability = min_stable_count - min_unstable_count;
+	min_player_stability = min_stable_count - min_unstable_count;*/
 
 	if(max_player_stability + min_player_stability == 0)
 		return 0;
@@ -433,6 +486,52 @@ bool AI::check_direction(Position current_position, Reversi game, int x_step, in
 	}
 	return check;
 }
+
+bool AI::check_potential(int& x, int& y, vector<vector<char>>& board){
+	// check left
+	if(x != 0)
+		if(board[x-1][y] == 'o')
+			return true;
+	
+	// check right
+	if(x != 7)
+		if(board[x+1][y] == 'o')
+			return true;
+
+	// check top
+	if(y != 0)
+		if(board[x][y-1] == 'o')
+			return true;
+
+	// check bottom
+	if(y != 7)
+		if(board[x][y+1] == 'o')
+			return true;
+
+	// check top left
+	if(y != 0 &&  x!= 0)
+		if(board[x-1][y-1] == 'o')
+			return true;
+
+	// check top right
+	if(y != 0 &&  x!= 7)
+		if(board[x+1][y-1] == 'o')
+			return true;
+
+	// check bottom left
+	if(y != 7 &&  x!= 0)
+		if(board[x-1][y+1] == 'o')
+			return true;
+
+	// check bottom right
+	if(y != 7 &&  x!= 7)
+		if(board[x+1][y+1] == 'o')
+			return true;
+
+	return false;
+}
+
+
 
 vector<Position> AI::get_unstable_tiles(Reversi game) {
 	vector<Position> available_moves = game.get_available_move_positions();

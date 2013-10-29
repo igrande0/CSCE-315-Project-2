@@ -58,11 +58,12 @@ private:
 	};  //Table containing tile values
 
 	// AI algorithms
-	NegaReturn nega_max(Reversi game, int depth, double alpha, double beta, double color);
+	NegaReturn nega_max(Reversi game, int depth, double alpha, double beta);
 	string get_educated_move(Reversi game);
 	string get_greedy_move(Reversi game);
 	
 	// Heuristic Functions
+	double table_stability(Reversi game);
 	double evaluate(Reversi game);
 	double parity(Reversi game);
 	double mobility(Reversi game);
@@ -73,6 +74,7 @@ private:
 	vector<Position> get_player_pieces(Reversi game);
 	bool is_corner(Position p);
 	bool check_direction(Position current_position, Reversi game, int x_step, int y_step);
+	bool check_potential(int& x, int& y, vector<vector<char>>& board);
 
 	vector<Position> get_unstable_tiles(Reversi game);
 	vector<Position> get_move_tiles(Position start, int x_step, int y_step, Reversi game);

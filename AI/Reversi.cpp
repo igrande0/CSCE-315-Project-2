@@ -156,9 +156,11 @@ bool Reversi::undo(){
 bool Reversi::is_game_over(){
         vector<Position> open_spaces = get_open_spaces();
         if(open_spaces.size() == 0)
-                return true;
+			return true;
+		else if(get_black_score() == 0 || get_white_score() == 0)
+			return true;
         else
-                return false;
+            return false;
 }
 
 void Reversi::clear_board(){                                                        //sets board to starting state of game
